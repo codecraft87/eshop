@@ -1,6 +1,7 @@
 package org.orderpaymentsystem.service;
 
 import java.util.Date;
+import java.util.List;
 
 import org.orderpaymentsystem.common.enums.OrderStatus;
 import org.orderpaymentsystem.common.enums.PaymentStatus;
@@ -11,6 +12,7 @@ import org.orderpaymentsystem.exceptions.DuplicatePaymentException;
 import org.orderpaymentsystem.exceptions.InvalidOrderStateForPaymentException;
 import org.orderpaymentsystem.exceptions.OrderNotFoundException;
 import org.orderpaymentsystem.exceptions.OrderNotFoundForPaymentException;
+import org.orderpaymentsystem.exceptions.PaymentCanNotBeCancelledException;
 import org.orderpaymentsystem.exceptions.PaymentCannotBeRetriedException;
 import org.orderpaymentsystem.exceptions.PaymentNotFoundException;
 import org.orderpaymentsystem.repository.OrderRepository;
@@ -80,6 +82,21 @@ public class PaymentService {
 		Payment payment = paymentRepo.findById(paymentId)
 				.orElseThrow(()-> new PaymentNotFoundException(paymentId));
 		return new PaymentDTO(payment);
+	}
+	
+	public void handleOrderCancellation(Long orderId) {
+		List<Payment> payments = paymentRepo.findByOrderId(orderId);
+		boolean hasInvalidStatus = payments.stream()
+				.anyMatch(p->
+					p.getStatus()==PaymentStatus.PAYMENT_DONE ||
+					p.getStatus()==PaymentStatus.PAYMENT_CANCELLED
+						);
+		if(hasInvalidStatus) {
+			throw new PaymentCanNotBeCancelledException(orderId);
+		}
+		payments.stream().forEach(p->p.setStatus(PaymentStatus.PAYMENT_CANCELLED));
+		paymentRepo.saveAll(payments);
+		
 	}
 
 	private void validatePaymentRequest(PaymentDTO paymentDTO) {

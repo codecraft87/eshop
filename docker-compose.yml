@@ -7,7 +7,7 @@ services:
     networks:
       - wired-network
   postgres:
-    image: postgres:latest
+    image: postgres:18.1
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin

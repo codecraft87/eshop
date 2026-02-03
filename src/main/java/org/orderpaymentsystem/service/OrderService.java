@@ -20,8 +20,11 @@ public class OrderService {
 
 	private final OrderRepository repo;
 	
-	public OrderService(OrderRepository repo) {
+	private final PaymentService paymentService;
+	
+	public OrderService(OrderRepository repo, PaymentService service) {
 		this.repo = repo;
+		this.paymentService = service;
 	}
 	
 	@Transactional
@@ -61,6 +64,7 @@ public class OrderService {
 		if (orderToCancel.getStatus() == OrderStatus.PAYMENT_DONE) {
 		    throw new OrderCannotBeModifiedException(orderId);
 		}
+		paymentService.handleOrderCancellation(orderId);
 		orderToCancel.setStatus(OrderStatus.ORDER_CANCELLED);
 		orderToCancel.setUpdatedAt(new Date());
 		Order cancelledOrder = repo.save(orderToCancel);

@@ -130,4 +130,16 @@ public class GlobalExceptionHandler {
 						ex.getMessage(),
 						LocalDateTime.now()));
 	}
+	
+	@ExceptionHandler(PaymentCanNotBeCancelledException.class)
+	public ResponseEntity<ErrorResponse> handleOrderNotFoundForPaymentException(PaymentCanNotBeCancelledException ex){
+		
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(new ErrorResponse(
+						"PAYMENT_CANNOT_BE_CANCELLED",
+						HttpStatus.BAD_REQUEST.value(),
+						ex.getMessage(),
+						LocalDateTime.now()));
+	}
 }
