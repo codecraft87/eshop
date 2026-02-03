@@ -22,6 +22,11 @@ public class PaymentController {
 		this.paymentService = service;
 	}
 	
+	@GetMapping
+	public ResponseEntity<String> about(){
+		return ResponseEntity.ok().body("<h1>Payment Service is running. Use /payments/{id} to retrieve an payment or POST /payments to proces payment.</h1>");
+	}
+	
 	@PostMapping
 	public ResponseEntity<PaymentResponse> processPayment(@RequestBody PaymentDTO paymentDTO) {
 		Long paymentId = paymentService.processPayment(paymentDTO);

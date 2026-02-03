@@ -22,6 +22,11 @@ public class OrderController {
 		this.orderService = service;
 	}
 	
+	@GetMapping
+	public ResponseEntity<String> about(){
+		return ResponseEntity.ok("<h1>Order Service is running. Use /orders/{id} to retrieve an order or POST /orders to create a new order.</h1>");
+	}
+	
 	@PostMapping
 	public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderDTO orderDto){
 		Long orderId = orderService.createOrder(orderDto);

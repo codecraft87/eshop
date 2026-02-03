@@ -5,6 +5,8 @@ import java.util.Date;
 import org.orderpaymentsystem.common.enums.OrderStatus;
 import org.orderpaymentsystem.dto.OrderDTO;
 import org.orderpaymentsystem.entity.Order;
+import org.orderpaymentsystem.exceptions.CancelledOrderCannotBeModifiedException;
+import org.orderpaymentsystem.exceptions.MandatoryFieldException;
 import org.orderpaymentsystem.exceptions.OrderAlreadyCancelledException;
 import org.orderpaymentsystem.exceptions.OrderCannotBeModifiedException;
 import org.orderpaymentsystem.exceptions.OrderNotFoundException;
@@ -24,6 +26,7 @@ public class OrderService {
 	
 	@Transactional
 	public Long createOrder(OrderDTO dto) {
+		validateCreateRequest(dto);
 		Order order = new Order(dto);
 		Date now = new Date();
 		order.setStatus(OrderStatus.CREATED);
@@ -32,6 +35,16 @@ public class OrderService {
 		return repo.save(order).getId();
 	}
 	
+	private void validateCreateRequest(OrderDTO dto) {
+		if(dto.getAmount()==null) {
+			throw new MandatoryFieldException(" Order Amount ");
+		}
+		if(dto.getUserId()==null || dto.getUserId().isEmpty()) {
+			throw new MandatoryFieldException(" User ");
+		}
+		
+	}
+
 	public OrderDTO getOrderDetails(Long orderId) {
 		Order orderDetails = repo.findById(orderId)
 				.orElseThrow(() -> new OrderNotFoundException(orderId));
@@ -59,9 +72,12 @@ public class OrderService {
 		Order orderToupdate= repo.findById(orderDto.getOrderId())
 				.orElseThrow(() -> new OrderNotFoundException(orderDto.getOrderId()));
 		if(orderToupdate.getStatus() == OrderStatus.PAYMENT_DONE || 
-			orderToupdate.getStatus() == OrderStatus.PAYMENT_FAILED){
+			orderToupdate.getStatus() == OrderStatus.PAYMENT_FAILED) {
 			 	throw new OrderCannotBeModifiedException(orderDto.getOrderId());
 			}
+		if(orderToupdate.getStatus() == OrderStatus.ORDER_CANCELLED) {
+			throw new CancelledOrderCannotBeModifiedException(orderDto.getOrderId());
+		}
 		orderToupdate.setUpdatedAt(new Date());
 		orderToupdate.setAmount(orderDto.getAmount());
 		orderToupdate.setUserId(orderDto.getUserId());

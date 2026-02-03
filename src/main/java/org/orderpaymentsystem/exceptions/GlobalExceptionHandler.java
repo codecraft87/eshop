@@ -94,4 +94,40 @@ public class GlobalExceptionHandler {
 						ex.getMessage(),
 						LocalDateTime.now()));
 	}
+	
+	@ExceptionHandler(CancelledOrderCannotBeModifiedException.class)
+	public ResponseEntity<ErrorResponse> handleCancelledOrderCannotBeModified(CancelledOrderCannotBeModifiedException ex){
+		
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(new ErrorResponse(
+						"CANCELLED_ORDER_CANNOT_BE_MODIFIED",
+						HttpStatus.BAD_REQUEST.value(),
+						ex.getMessage(),
+						LocalDateTime.now()));
+	}
+	
+	@ExceptionHandler(MandatoryFieldException.class)
+	public ResponseEntity<ErrorResponse> handleMandatoryFields(MandatoryFieldException ex){
+		
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(new ErrorResponse(
+						"MANDATORY_FIELD",
+						HttpStatus.BAD_REQUEST.value(),
+						ex.getMessage(),
+						LocalDateTime.now()));
+	}
+	
+	@ExceptionHandler(OrderNotFoundForPaymentException.class)
+	public ResponseEntity<ErrorResponse> handleOrderNotFoundForPaymentException(OrderNotFoundForPaymentException ex){
+		
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(new ErrorResponse(
+						"ORDER_NOT_FOUND_FOR_PAYMENTS",
+						HttpStatus.BAD_REQUEST.value(),
+						ex.getMessage(),
+						LocalDateTime.now()));
+	}
 }

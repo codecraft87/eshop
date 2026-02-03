@@ -37,7 +37,7 @@ public class PaymentService {
 		Payment paymentToBeProcesed = new Payment(paymentDTO);
 		Long paymentId = null;
 		if(paymentDTO.isSimulateFailure()) {
-			paymentToBeProcesed.setStatus(PaymentStatus.PAYMENT_FAILED );
+			paymentToBeProcesed.setStatus(PaymentStatus.PAYMENT_FAILED);
 			Date now = new Date();
 			paymentToBeProcesed.setCreatedAt(now);
 			paymentToBeProcesed.setUpdatedAt(now);

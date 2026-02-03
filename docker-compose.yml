@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    image: springdemo/order-payment:v0.0.0
+    ports:
+      - "8081:8081"
+    networks:
+      - wired-network
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: orderdb
+    ports:
+      - "5433:5432"
+    networks:
+      - wired-network
+    volumes:
+      - db-storage:/var/lib/postgresql
+
+networks:
+  wired-network:
+    driver: bridge
+
+volumes:
+    db-storage:
