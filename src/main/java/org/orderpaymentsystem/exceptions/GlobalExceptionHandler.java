@@ -1,7 +1,8 @@
 package org.orderpaymentsystem.exceptions;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
+import org.orderpaymentsystem.common.enums.ErrorEnums;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,10 +18,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.NOT_FOUND)
 				.body(new ErrorResponse(
-						"ORDER_NOT_FOUND",
+						ErrorEnums.ORDER_NOT_FOUND,
 						HttpStatus.NOT_FOUND.value(),
 						ex.getMessage(),						
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
 	@ExceptionHandler(OrderAlreadyCancelledException.class)
@@ -29,10 +30,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(new ErrorResponse(
-						"ORDER_ALREADY_CANCELLED",
+						ErrorEnums.ORDER_ALREADY_CANCELLED,
 						HttpStatus.BAD_REQUEST.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
 	@ExceptionHandler(OrderCannotBeModifiedException.class)
@@ -41,10 +42,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(new ErrorResponse(
-						"ORDER_CANNOT_BE_MODIFIED",
+						ErrorEnums.ORDER_CANNOT_BE_MODIFIED,
 						HttpStatus.BAD_REQUEST.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
 	@ExceptionHandler(PaymentNotFoundException.class)
@@ -53,10 +54,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.NOT_FOUND)
 				.body(new ErrorResponse(
-						"PAYMENT_NOT_FOUND",
+						ErrorEnums.PAYMENT_NOT_FOUND,
 						HttpStatus.NOT_FOUND.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
 	@ExceptionHandler(DuplicatePaymentException.class)
@@ -65,10 +66,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.CONFLICT)
 				.body(new ErrorResponse(
-						"DUPLICATE_PAYMENT",
+						ErrorEnums.DUPLICATE_PAYMENT,
 						HttpStatus.CONFLICT.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
 	@ExceptionHandler(InvalidOrderStateForPaymentException.class)
@@ -77,10 +78,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(new ErrorResponse(
-						"INVALID_ORDER_STATE",
+						ErrorEnums.INVALID_ORDER_STATE,
 						HttpStatus.BAD_REQUEST.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
 	@ExceptionHandler(PaymentCannotBeRetriedException.class)
@@ -89,10 +90,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(new ErrorResponse(
-						"PAYMENT_CANNOT_BE_RETRIED",
+						ErrorEnums.PAYMENT_CANNOT_BE_RETRIED,
 						HttpStatus.BAD_REQUEST.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
 	@ExceptionHandler(CancelledOrderCannotBeModifiedException.class)
@@ -101,22 +102,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(new ErrorResponse(
-						"CANCELLED_ORDER_CANNOT_BE_MODIFIED",
+						ErrorEnums.CANCELLED_ORDER_CANNOT_BE_MODIFIED,
 						HttpStatus.BAD_REQUEST.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
-	}
-	
-	@ExceptionHandler(MandatoryFieldException.class)
-	public ResponseEntity<ErrorResponse> handleMandatoryFields(MandatoryFieldException ex){
-		
-		return ResponseEntity
-				.status(HttpStatus.BAD_REQUEST)
-				.body(new ErrorResponse(
-						"MANDATORY_FIELD",
-						HttpStatus.BAD_REQUEST.value(),
-						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
 	@ExceptionHandler(OrderNotFoundForPaymentException.class)
@@ -125,21 +114,33 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(new ErrorResponse(
-						"ORDER_NOT_FOUND_FOR_PAYMENTS",
+						ErrorEnums.ORDER_NOT_FOUND_FOR_PAYMENT,
 						HttpStatus.BAD_REQUEST.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
 	}
 	
-	@ExceptionHandler(PaymentCanNotBeCancelledException.class)
-	public ResponseEntity<ErrorResponse> handleOrderNotFoundForPaymentException(PaymentCanNotBeCancelledException ex){
+	@ExceptionHandler(PaymentCannotBeCancelledException.class)
+	public ResponseEntity<ErrorResponse> handlePaymentCannotBeCancelled(PaymentCannotBeCancelledException ex){
 		
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
 				.body(new ErrorResponse(
-						"PAYMENT_CANNOT_BE_CANCELLED",
+						ErrorEnums.PAYMENT_CANNOT_BE_CANCELLED,
 						HttpStatus.BAD_REQUEST.value(),
 						ex.getMessage(),
-						LocalDateTime.now()));
+						Instant.now()));
+	}
+	
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex){
+		
+		return ResponseEntity
+				.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorResponse(
+						ErrorEnums.INTERNAL_SERVER_ERROR,
+						HttpStatus.INTERNAL_SERVER_ERROR.value(),
+						ex.getMessage(),
+						Instant.now()));
 	}
 }

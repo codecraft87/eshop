@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OrderResponse {
 	  private Long orderId;
-	    private String message;
+	  private String message;
 }

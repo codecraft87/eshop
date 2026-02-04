@@ -24,7 +24,7 @@ Overall, the service focuses on:
 * **Order Management**
 * **Payment Management**
 
-Scope includes **API design, implementation, and documentation only** (no UI).
+The scope includes **API design, implementation, and documentation only** (no UI).
 
 Functional scope:
 
@@ -115,6 +115,8 @@ flowchart LR
 
 * The system follows a **single database architecture**
 
+* Deployed using Docker with separate containers for the application and database
+
 ---
 
 ## 5. Order Lifecycle States
@@ -142,7 +144,7 @@ flowchart LR
 * An order **cannot be modified** once payment has been initiated
   (`PAYMENT_DONE`, `PAYMENT_FAILED`)
 * A cancelled order **cannot be modified**
-* An order **cannot be cancelled** once payment is successful.
+* An order **cannot be cancelled** once payment is successful
 * Duplicate cancellation requests are rejected
 
 ---
@@ -178,8 +180,8 @@ flowchart LR
             P_DONE[PAYMENT_DONE]
         end
     end
-
 ```
+
 ### Order Cancel
 
 ```mermaid
@@ -189,11 +191,21 @@ flowchart LR
             O_CREATED[CREATED] --> O_CANCELLED[ORDER_CANCELLED]
         end
         subgraph "Payment Module"
-            P_FAILED[PAYMENT_FAILED] --> O_CANCELLED[ORDER_CANCELLED]
+            P_FAILED[PAYMENT_FAILED]
         end
     end
-
 ```
+
+### Order Cancellation Rules
+
+* An order may be cancelled only if payment has **not** been completed successfully.
+* Orders with a **failed payment** (`PAYMENT_FAILED`) are eligible for cancellation.
+* Orders with a **successful payment** (`PAYMENT_DONE`) cannot be cancelled.
+* When an order is cancelled:
+  * All associated payments must be in a cancellable state.
+  * If any payment is already completed successfully, the cancellation request is rejected.
+* Order cancellation and payment state updates are performed atomically to ensure consistency.
+
 
 ### Failed Payment
 
@@ -208,7 +220,6 @@ flowchart LR
             P_FAILED[PAYMENT_FAILED]
         end
     end
-
 ```
 
 ### Retried Payment
@@ -238,7 +249,7 @@ flowchart LR
   * The corresponding order is also marked as `PAYMENT_FAILED`
   * Both updates occur within a single transaction
 
-  This ensures the order never remains stuck in `CREATED` and clearly communicates that payment retry is required.
+  This ensures the order never remains stuck in `CREATED` and clearly communicates that a payment retry is required.
 
 * **Duplicate orders**
   The system prevents the creation of multiple orders for the same request.
@@ -260,7 +271,7 @@ By using `@RestControllerAdvice`:
 * There are no repetitive `try/catch` blocks cluttering endpoint logic
 * Error mapping is centralized, ensuring a **consistent response structure**
 
-Services throw **domain-specific exceptions** (e.g., `OrderNotFoundException`, `DuplicatePaymentException`) without any concern for HTTP semantics.
+Services throw **domain-specific exceptions** (e.g., `OrderNotFoundException`, `DuplicatePaymentException`) without concern for HTTP semantics.
 
 The `@RestControllerAdvice` acts as a mapper that translates these domain exceptions into appropriate HTTP responses, for example:
 
@@ -272,16 +283,59 @@ The `@RestControllerAdvice` acts as a mapper that translates these domain except
 ## 9. API List (Names Only)
 
 * `POST /orders` – Create an order
-* `GET /orders/{id}` – Retrieve order details
-* `PUT /orders/{id}` – Modify order details
-* `POST /orders/{id}/cancel` – Cancel an order
+* `GET /orders/{orderId}` – Retrieve order details
+* `PUT /orders/{orderId}` – Modify order details
+* `PUT /orders/{orderId}/cancel` – Cancel an order
 * `POST /payments` – Process payment for an order
-* `POST /payments/{id}/retry` – Retry payment
+* `PUT /payments/{paymentId}/retry` – Retry payment
 * `GET /payments/{paymentId}` – Retrieve payment details
 
 > No API versioning or advanced filtering in this phase.
 
 ---
+
+## 10. Docker Deployment
+
+The application is containerized using Docker and deployed as **separate containers** for the application and the database.
+
+### Deployment Model
+
+* **Application container**
+  * Runs the Spring Boot application as an executable JAR
+  * Exposes HTTP APIs on port `8081`
+
+* **Database container**
+  * Runs PostgreSQL as a separate container
+  * Persists data using a Docker volume
+
+The containers communicate over a **Docker bridge network**, allowing the application to connect to the database using the service name as the hostname.
+
+### Container Isolation & Networking
+
+* The application and database run in **isolated containers**
+* Communication between containers is **internal to Docker**
+* The application connects to PostgreSQL using:
+
+jdbc:postgresql://postgres:5432/orderdb
+
+* Database ports are exposed **only for local development and debugging**
+and are not required for container-to-container communication
+
+### Data Persistence
+
+* PostgreSQL data is stored in a **named Docker volume**
+* Data remains intact across container restarts
+
+### Orchestration
+
+* Docker Compose is used to:
+* Start both containers together
+* Define networking and dependencies
+* Ensure the database is healthy before the application starts
+
+This deployment approach keeps infrastructure simple while demonstrating
+clear separation of concerns, reproducibility, and environment isolation.
+
 
 ## 10. Key Design Decisions
 
@@ -305,4 +359,3 @@ The `@RestControllerAdvice` acts as a mapper that translates these domain except
 * External integrations
 
 ---
-

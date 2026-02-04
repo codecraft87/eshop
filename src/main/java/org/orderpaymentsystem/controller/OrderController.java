@@ -24,30 +24,30 @@ public class OrderController {
 	
 	@GetMapping
 	public ResponseEntity<String> about(){
-		return ResponseEntity.ok("<h1>Order Service is running. Use /orders/{id} to retrieve an order or POST /orders to create a new order.</h1>");
+		return ResponseEntity.ok("<h1>Order Service is running.</h1>");
 	}
 	
 	@PostMapping
 	public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderDTO orderDto){
-		Long orderId = orderService.createOrder(orderDto);
+		final Long orderId = orderService.createOrder(orderDto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(
 				new OrderResponse(orderId, "Order Created"));
 	}
 	
-	@GetMapping("/{id}")
-	public ResponseEntity<OrderDTO> retrieveOrderDetails(@PathVariable("id") Long orderId){
+	@GetMapping("/{orderId}")
+	public ResponseEntity<OrderDTO> retrieveOrderDetails(@PathVariable("orderId") Long orderId){
 			 return ResponseEntity.ok().body(orderService.getOrderDetails(orderId));
 		 
 	}
 	
-	@PutMapping("/{id}/cancel")
-	public ResponseEntity<OrderResponse> cancelOrder(@PathVariable("id") Long orderId){
+	@PutMapping("/{orderId}/cancel")
+	public ResponseEntity<OrderResponse> cancelOrder(@PathVariable("orderId") Long orderId){
 		OrderDTO cancelledOrder = orderService.cancelOrder(orderId);
 		return ResponseEntity.ok().body(new OrderResponse(cancelledOrder.getOrderId(), "Order Cancelled"));
 	}
 	
-	@PutMapping("/{id}")
-	public ResponseEntity<OrderDTO> updateOrder(@PathVariable("id") Long orderId,
+	@PutMapping("/{orderId}")
+	public ResponseEntity<OrderDTO> updateOrder(@PathVariable("orderId") Long orderId,
 			@RequestBody OrderDTO orderDto){
 		orderDto.setOrderId(orderId);
 		OrderDTO updatedOrder = orderService.updateOrder(orderDto);

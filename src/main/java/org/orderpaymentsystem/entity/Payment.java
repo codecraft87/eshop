@@ -1,6 +1,6 @@
 package org.orderpaymentsystem.entity;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.orderpaymentsystem.common.enums.PaymentStatus;
 import org.orderpaymentsystem.dto.PaymentDTO;
@@ -24,10 +24,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Payment {
 	
-	public Payment(PaymentDTO dto) {
-		set(dto);
-	}
-
 	private void set(PaymentDTO dto) {
 		this.orderId = dto.getOrderId();
 	}
@@ -44,8 +40,14 @@ public class Payment {
 	private PaymentStatus status;
 	
 	@Column(name = "CREATED_AT")
-	private Date createdAt;
+	private Instant createdAt;
 	
 	@Column(name = "UPDATED_AT")
-	private Date updatedAt;
+	private Instant updatedAt;
+	
+	public static Payment getPaymentEntity(PaymentDTO dto) {
+		Payment payment = new Payment();
+		payment.set(dto);
+		return payment;
+	}
 }

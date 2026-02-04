@@ -1,6 +1,8 @@
 package org.orderpaymentsystem.exceptions;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+
+import org.orderpaymentsystem.common.enums.ErrorEnums;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,8 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ErrorResponse {
 
-	private String errorCode;
+	private ErrorEnums errorCode;
     private int status;
     private String message;
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 }

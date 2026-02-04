@@ -1,6 +1,6 @@
 package org.orderpaymentsystem.entity;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.orderpaymentsystem.common.enums.OrderStatus;
 import org.orderpaymentsystem.dto.OrderDTO;
@@ -37,10 +37,10 @@ public class Order {
 	private double amount;
 	
 	@Column(name = "CREATED_AT")
-	private Date createdAt;
+	private Instant createdAt;
 	
 	@Column(name = "UPDATED_AT")
-	private Date updatedAt;
+	private Instant updatedAt;
 	
 	public void set(OrderDTO dto) {
 		if(dto.getOrderId()!=null) {
@@ -50,7 +50,9 @@ public class Order {
 		this.userId = dto.getUserId();
 	}
 	
-	public Order(OrderDTO dto) {
-		set(dto);
+	public static Order getOrderEntity(OrderDTO dto) {
+		Order order = new Order();
+		order.set(dto);
+		return order;
 	}
 }

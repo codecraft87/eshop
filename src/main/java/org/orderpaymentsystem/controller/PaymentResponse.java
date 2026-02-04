@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentResponse {
 	  private Long paymentId;
-	    private String message;
+	  private String message;
 }

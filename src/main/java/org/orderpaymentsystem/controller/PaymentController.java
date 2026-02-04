@@ -24,7 +24,7 @@ public class PaymentController {
 	
 	@GetMapping
 	public ResponseEntity<String> about(){
-		return ResponseEntity.ok().body("<h1>Payment Service is running. Use /payments/{id} to retrieve an payment or POST /payments to proces payment.</h1>");
+		return ResponseEntity.ok().body("<h1>Payment Service is running.</h1>");
 	}
 	
 	@PostMapping
@@ -34,15 +34,15 @@ public class PaymentController {
 				new PaymentResponse(paymentId,"Payment processed"));
 	}
 	
-	@PutMapping("/{id}/retry")
-	public ResponseEntity<PaymentResponse> retryPayment(@PathVariable("id") Long paymentId){
+	@PutMapping("/{paymentId}/retry")
+	public ResponseEntity<PaymentResponse> retryPayment(@PathVariable("paymentId") Long paymentId){
 		Long payId =  paymentService.retryPayment(paymentId);
 		return ResponseEntity.status(HttpStatus.OK).body(
 				new PaymentResponse(payId,"Payment processed"));
 	}
 	
-	@GetMapping("/{id}")
-	public ResponseEntity<PaymentDTO> getPaymentDetails(@PathVariable("id") Long paymentId){
+	@GetMapping("/{paymentId}")
+	public ResponseEntity<PaymentDTO> getPaymentDetails(@PathVariable("paymentId") Long paymentId){
 		PaymentDTO dto = paymentService.getPaymentDetails(paymentId);
 		return ResponseEntity.ok().body(dto);
 	}

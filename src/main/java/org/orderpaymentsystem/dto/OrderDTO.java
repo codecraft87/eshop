@@ -1,5 +1,7 @@
 package org.orderpaymentsystem.dto;
 
+import java.time.Instant;
+
 import org.orderpaymentsystem.common.enums.OrderStatus;
 import org.orderpaymentsystem.entity.Order;
 
@@ -12,16 +14,22 @@ public class OrderDTO {
 	private String userId;
 	private Double amount;
 	private Long orderId;
+	private Instant createdAt;
+	private Instant updatedAt;
 	private OrderStatus status;
-	
-	public OrderDTO(Order order) {
-		set(order);
-	}
 	
 	public void set(Order order) {
 		this.userId = order.getUserId();
 		this.amount = order.getAmount();
 		this.orderId = order.getId();
 		this.status = order.getStatus();
+		this.createdAt = order.getCreatedAt();
+		this.updatedAt = order.getUpdatedAt();
+	}
+	
+	public static OrderDTO getOrderDTO(Order order) {
+		OrderDTO dto = new OrderDTO();
+		dto.set(order);
+		return dto;
 	}
 }
