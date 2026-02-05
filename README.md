@@ -199,9 +199,10 @@ flowchart LR
         end
         subgraph "Payment Module"
             P_FAILED[PAYMENT_FAILED] --> P_CANCELLED[PAYMENT_CANCELLED]
+            %% Payment cancellation is triggered by Order cancellation
         end
     end
-    %% Payment cancellation is triggered by Order cancellation
+
 ```
 
 
