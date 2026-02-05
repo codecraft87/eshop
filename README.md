@@ -139,6 +139,12 @@ flowchart LR
 * **PAYMENT_FAILED** – Payment attempt failed
 * **ORDER_CANCELLED** – Order cancelled by the user
 
+### Payment States
+
+* **PAYMENT_DONE** – Payment completed successfully
+* **PAYMENT_FAILED** – Payment attempt failed
+* **PAYMENT_CANCELLED** – Payment cancelled due to order cancellation
+
 ### Order Modification Rules
 
 * An order **cannot be modified** once payment has been initiated
@@ -189,12 +195,15 @@ flowchart LR
     subgraph "Order Cancel"
         subgraph "Order Module"
             O_CREATED[CREATED] --> O_CANCELLED[ORDER_CANCELLED]
+            O_FAILED[PAYMENT_FAILED] --> O_CANCELLED[ORDER_CANCELLED]
         end
         subgraph "Payment Module"
-            P_FAILED[PAYMENT_FAILED]
+            P_FAILED[PAYMENT_FAILED] --> P_CANCELLED[PAYMENT_CANCELLED]
         end
     end
 ```
+
+%% Payment cancellation is triggered by Order cancellation
 
 ### Order Cancellation Rules
 
