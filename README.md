@@ -201,9 +201,9 @@ flowchart LR
             P_FAILED[PAYMENT_FAILED] --> P_CANCELLED[PAYMENT_CANCELLED]
         end
     end
+    %% Payment cancellation is triggered by Order cancellation
 ```
 
-%% Payment cancellation is triggered by Order cancellation
 
 ### Order Cancellation Rules
 
