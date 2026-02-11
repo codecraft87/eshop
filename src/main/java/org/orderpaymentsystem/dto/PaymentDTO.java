@@ -5,6 +5,7 @@ import java.time.Instant;
 import org.orderpaymentsystem.common.enums.PaymentStatus;
 import org.orderpaymentsystem.entity.Payment;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,8 +22,10 @@ public class PaymentDTO {
 		this.updatedAt = payment.getUpdatedAt();
 		this.status = payment.getStatus();
 	}
+	
 	private Long paymentId;
 	
+	@NotNull(message = "{order.id.notnull}")
 	private Long orderId;
 	
 	private PaymentStatus status;

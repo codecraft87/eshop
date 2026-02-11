@@ -5,14 +5,20 @@ import java.time.Instant;
 import org.orderpaymentsystem.common.enums.OrderStatus;
 import org.orderpaymentsystem.entity.Order;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 public class OrderDTO {
+	
+	@NotNull(message = "{user.notnull}")
 	private String userId;
+	
+	@NotNull(message = "{amount.notnull}")
 	private Double amount;
+	
 	private Long orderId;
 	private Instant createdAt;
 	private Instant updatedAt;
