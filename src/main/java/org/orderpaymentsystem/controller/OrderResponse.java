@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderResponse {
-	  private Long orderId;
-	  private String message;
+    private Long orderId;
+    private String message;
 }

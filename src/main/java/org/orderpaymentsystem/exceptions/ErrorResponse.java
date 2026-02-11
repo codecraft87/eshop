@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ErrorResponse {
 
-	private ErrorEnums errorCode;
+    private ErrorEnums errorCode;
     private int status;
     private String message;
     private Instant timestamp;

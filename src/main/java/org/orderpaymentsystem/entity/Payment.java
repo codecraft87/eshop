@@ -19,35 +19,35 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name="payments")
+@Table(name = "payments")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Payment {
-	
-	private void set(PaymentDTO dto) {
-		this.orderId = dto.getOrderId();
-	}
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	
-	@Column(name="ORDER_ID")
-	private Long orderId;
-	
-	@Enumerated(EnumType.STRING)
-	@Column(name="PAYMENT_STATUS")
-	private PaymentStatus status;
-	
-	@Column(name = "CREATED_AT")
-	private Instant createdAt;
-	
-	@Column(name = "UPDATED_AT")
-	private Instant updatedAt;
-	
-	public static Payment getPaymentEntity(PaymentDTO dto) {
-		Payment payment = new Payment();
-		payment.set(dto);
-		return payment;
-	}
+    private void set(PaymentDTO dto) {
+        this.orderId = dto.getOrderId();
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "ORDER_ID")
+    private Long orderId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "PAYMENT_STATUS")
+    private PaymentStatus status;
+
+    @Column(name = "CREATED_AT")
+    private Instant createdAt;
+
+    @Column(name = "UPDATED_AT")
+    private Instant updatedAt;
+
+    public static Payment getPaymentEntity(PaymentDTO dto) {
+        Payment payment = new Payment();
+        payment.set(dto);
+        return payment;
+    }
 }

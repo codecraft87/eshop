@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentResponse {
-	  private Long paymentId;
-	  private String message;
+    private Long paymentId;
+    private String message;
 }
