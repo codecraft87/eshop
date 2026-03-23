@@ -215,7 +215,7 @@ flowchart LR
   * All associated payments must be in a cancellable state.
   * If any payment is already completed successfully, the cancellation request is rejected.
 * Order cancellation and payment state updates are performed atomically to ensure consistency.
-
+* Order cancellation triggers payment cancellation. All associated payments in a cancellable state (PAYMENT_FAILED) are transitioned to PAYMENT_CANCELLED as part of the same transaction.
 
 ### Failed Payment
 
