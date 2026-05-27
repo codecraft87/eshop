@@ -77,6 +77,14 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ErrorEnums.ORDER_NOT_FOUND_FOR_PAYMENT, HttpStatus.BAD_REQUEST.value(),
                         ex.getMessage(), Instant.now()));
     }
+    
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProductNotFoundForPaymentException(ProductNotFoundException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ErrorEnums.PRODUCT_NOT_FOUND, HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(), Instant.now()));
+    }
 
     @ExceptionHandler(PaymentCannotBeCancelledException.class)
     public ResponseEntity<ErrorResponse> handlePaymentCannotBeCancelled(PaymentCannotBeCancelledException ex) {
