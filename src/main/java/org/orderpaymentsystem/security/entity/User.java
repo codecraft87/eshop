@@ -1,10 +1,6 @@
 package org.orderpaymentsystem.security.entity;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import org.orderpaymentsystem.security.model.UserDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

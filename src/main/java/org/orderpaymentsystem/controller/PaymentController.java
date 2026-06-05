@@ -24,7 +24,7 @@ public class PaymentController {
         this.paymentService = service;
     }
 
-    @GetMapping
+    @GetMapping("/about")
     public ResponseEntity<String> about() {
         return ResponseEntity.ok().body("<h1>Payment Service is running.</h1>");
     }

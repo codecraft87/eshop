@@ -8,21 +8,29 @@ import org.orderpaymentsystem.dto.ProductDTO;
 import org.orderpaymentsystem.entity.Product;
 import org.orderpaymentsystem.exceptions.ProductNotFoundException;
 import org.orderpaymentsystem.repository.ProductRepository;
+import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 
+@Service
 public class ProductService {
 
+    private final NotificationService notificationService;
     private ProductRepository repo;
     
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, NotificationService notificationService) {
         this.repo = productRepository;
+        this.notificationService = notificationService;
     }
     
     @Transactional
     public Long addProduct(ProductDTO dto) {
         final Product product = Product.getProductEntity(dto);
-        return saveProduct(product).getId();
+        product.setCreatedAt(Instant.now());
+        Long productId = saveProduct(product).getId();
+
+        notificationService.productCreated(productId);
+        return productId;
     }
 
     public Product getProductDetails(Long productId) {
@@ -46,14 +54,18 @@ public class ProductService {
         productToUpdate.setDescription(productDto.getDescription());
         productToUpdate.setPrice(productDto.getPrice());
         
-        final Product updateProduct = saveProduct(productToUpdate);
-        return ProductDTO.getProductDTO(updateProduct);
+        final Product updatedProduct = saveProduct(productToUpdate);
+        notificationService.productUpdated(updatedProduct.getId());
+        return ProductDTO.getProductDTO(updatedProduct);
     }
     
     @Transactional
     public Long deleteProduct(Long productId) {
         final Product productToBeDeleted = getProductById(productId);
         repo.delete(productToBeDeleted);
+
+        notificationService.productDeleted(productId);
+        
         return productId;
     }
 
@@ -63,6 +75,8 @@ public class ProductService {
     }
     
     private Product saveProduct(Product product) {
+        product.setUpdatedAt(Instant.now());
+        System.out.println(product);
         return repo.save(product);
     }
 }

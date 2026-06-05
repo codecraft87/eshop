@@ -1,0 +1,49 @@
+Create basket
+
+PUT http://localhost:8081/basket
+request
+{
+    "userId" : 1,
+    "items" : [
+        {"productId":1 ,
+         "quantity": 2},
+         {"productId":2 ,
+         "quantity": 1},
+         {"productId":3 ,
+         "quantity": 3}
+    ]
+}
+
+get http://localhost:8081/basket/1
+[
+    {
+        "productId": 1,
+        "productName": "nothing 4(a) pro",
+        "description": "Nothing 4(a) 256gb",
+        "price": 44999.0,
+        "quantity": 2
+    },
+    {
+        "productId": 2,
+        "productName": "nothing 4(a) pro",
+        "description": "Nothing 4(a) 128gb",
+        "price": 42999.0,
+        "quantity": 1
+    },
+    {
+        "productId": 3,
+        "productName": "nothing 4(a) pro case",
+        "description": "Metal",
+        "price": 699.0,
+        "quantity": 3
+    }
+]
+
+checkout post http://localhost:8081/basket
+
+{
+    "userId" : 1
+}
+
+Response
+Cart process

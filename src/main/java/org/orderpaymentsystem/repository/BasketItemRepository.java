@@ -1,10 +1,10 @@
 package org.orderpaymentsystem.repository;
 
-import org.orderpaymentsystem.entity.Product;
+import org.orderpaymentsystem.entity.BasketItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface BasketItemRepository extends JpaRepository<BasketItem, Long> {
 
 }

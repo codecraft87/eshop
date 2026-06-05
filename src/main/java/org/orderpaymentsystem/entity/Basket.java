@@ -3,9 +3,9 @@ package org.orderpaymentsystem.entity;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import org.orderpaymentsystem.common.enums.OrderStatus;
-import org.orderpaymentsystem.dto.OrderDTO;
+import org.orderpaymentsystem.common.enums.BasketStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,49 +18,45 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
+@Table(name = "basket")
 @Getter
 @Setter
-@Entity
-@Table(name = "orders")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Order {
+public class Basket {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @Column(name = "USER_ID")
-    private String userId;
-
+    private Long userId;
+    
     @Enumerated(EnumType.STRING)
-    @Column(name = "ORDER_STATUS")
-    private OrderStatus status;
-
-    @Column(name = "AMOUNT")
-    private double totalAmount;
-
+    @Column(name = "BASKET_STATUS")
+    private BasketStatus status;
+    
     @Column(name = "CREATED_AT")
     private Instant createdAt;
 
     @Column(name = "UPDATED_AT")
     private Instant updatedAt;
+    
+    @OneToMany(mappedBy = "basket", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BasketItem> items = new ArrayList<>();
+    
+    public Optional<BasketItem> findItemByProductId(Long itemId) {
 
-    @Builder.Default
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
-
-    public void set(OrderDTO dto) {
-        if (dto.getOrderId() != null) {
-            this.id = dto.getOrderId();
-        }
-        this.totalAmount = dto.getTotalAmount();
-        this.userId = dto.getUserId();
+        return items.stream()
+                .filter( item->
+                    item.getProduct()
+                        .getId()
+                        .equals(itemId))
+                .findFirst();
     }
 }

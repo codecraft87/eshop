@@ -1,5 +1,7 @@
 package org.orderpaymentsystem.controller;
 
+import java.util.List;
+
 import org.orderpaymentsystem.dto.OrderDTO;
 import org.orderpaymentsystem.service.OrderService;
 import org.springframework.http.HttpStatus;
@@ -24,7 +26,7 @@ public class OrderController {
         this.orderService = service;
     }
 
-    @GetMapping
+    @GetMapping("/about")
     public ResponseEntity<String> about() {
         return ResponseEntity.ok("<h1>Order Service is running.</h1>");
     }
@@ -41,6 +43,12 @@ public class OrderController {
 
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<OrderDTO>> getOrders(@PathVariable("userId") Long userId) {
+        return ResponseEntity.ok().body(orderService.getOrders(userId));
+
+    }
+
     @PutMapping("/{orderId}/cancel")
     public ResponseEntity<OrderResponse> cancelOrder(@PathVariable("orderId") Long orderId) {
         OrderDTO cancelledOrder = orderService.cancelOrder(orderId);
@@ -49,8 +57,10 @@ public class OrderController {
 
     @PutMapping("/{orderId}")
     public ResponseEntity<OrderDTO> updateOrder(@PathVariable("orderId") Long orderId, @RequestBody OrderDTO orderDto) {
+        System.out.println("updating order "+orderId + "DT "+orderDto);
         orderDto.setOrderId(orderId);
         OrderDTO updatedOrder = orderService.updateOrder(orderDto);
+        System.out.println(updatedOrder);
         return ResponseEntity.ok().body(updatedOrder);
     }
 }

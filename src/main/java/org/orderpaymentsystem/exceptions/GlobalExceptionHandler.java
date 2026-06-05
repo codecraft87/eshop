@@ -112,4 +112,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new ErrorResponse(ErrorEnums.VALIDATION_FAILED,
                 HttpStatus.BAD_REQUEST.value(), errorMessage, Instant.now()));
     }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(ErrorEnums.RESOURCE_NOT_FOUND, HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(), Instant.now()));
+    }
+
+    @ExceptionHandler(GenericException.class)
+    public ResponseEntity<ErrorResponse> handleGenericFoundException(GenericException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(ErrorEnums.REGISTRATION_FAILED, HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ex.getMessage(), Instant.now()));
+    }
 }

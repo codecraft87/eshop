@@ -1,0 +1,53 @@
+## Register Order
+
+POST http://localhost:8081/auth/register
+
+Request
+{
+    "username" : "admin",
+    "password" : "Pass@123",
+    "roles" : ["ADMIN"]
+}
+
+###
+# Expected Result
+#
+1. 
+admin registered
+
+2. 
+{
+    "errorCode": "RESOURCE_NOT_FOUND",
+    "status": 404,
+    "message": "Role not found USER2",
+    "timestamp": "2026-06-03T10:43:03.430172273Z"
+}
+
+3. 
+{
+    "errorCode": "REGISTRATION_FAILED",
+    "status": 500,
+    "message": "Registration Failed: User [admin], already exists.",
+    "timestamp": "2026-06-03T11:15:52.916179636Z"
+}
+
+POST http://localhost:8081/auth/login
+
+Request
+{
+    "username" : "admin",
+    "password" : "aPass@123"
+}
+
+###
+# Expected Result
+#
+1. 
+{
+    "errorCode": "INTERNAL_SERVER_ERROR",
+    "status": 500,
+    "message": "Bad credentials",
+    "timestamp": "2026-06-03T11:18:13.887158921Z"
+}
+
+2. on success jwt token

@@ -26,7 +26,7 @@ public class ProductController {
         this.productService = service;
     }
     
-    @GetMapping
+    @GetMapping("/about")
     public ResponseEntity<String> about() {
         return ResponseEntity.ok().body("<h1>Product Service is running.</h1>");
     }
@@ -43,14 +43,12 @@ public class ProductController {
         return ResponseEntity.ok().body(productList);
     }
     
-    @GetMapping
-    @RequestMapping("/{productId}")
+    @GetMapping("/{productId}")
     public ResponseEntity<Product> getProduct(@PathVariable("productId") Long pid) {
         return ResponseEntity.ok().body(productService.getProductDetails(pid));
     }
     
-    @PutMapping
-    @RequestMapping("/{productId}")
+    @PutMapping("/{productId}")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable("productId") Long pid,
         @RequestBody ProductDTO productDto) {
         productDto.setId(pid);
@@ -58,8 +56,7 @@ public class ProductController {
         return ResponseEntity.ok().body(updatedProduct);
     }
     
-    @DeleteMapping
-    @RequestMapping("/{productId}")
+    @DeleteMapping("/{productId}")
     public ResponseEntity<ProductResponse> deleteProduct(@PathVariable Long pid) {
         Long productId = productService.deleteProduct(pid);
         return ResponseEntity.ok().body(new ProductResponse(productId, "Product deleted"));        

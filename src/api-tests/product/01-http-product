@@ -1,0 +1,16 @@
+POST http://localhost:8081/products
+
+request
+{
+    "name" : "nothing 4(a) pro",
+    "description" : "Nothing 4(a) 256gb",
+    "price" : 47999
+
+}
+
+response
+{
+    "productId": 1,
+    "message": "Product Created"
+}
+

@@ -3,6 +3,8 @@ package org.orderpaymentsystem.security.service;
 import java.util.HashSet;
 import java.util.List;
 
+import org.orderpaymentsystem.exceptions.GenericException;
+import org.orderpaymentsystem.exceptions.ResourceNotFoundException;
 import org.orderpaymentsystem.security.entity.Role;
 import org.orderpaymentsystem.security.entity.User;
 import org.orderpaymentsystem.security.model.UserDTO;
@@ -30,15 +32,22 @@ public class UserService {
     public void saveUser(UserDTO dto) {
         User user = new User();
         mapDtoToEntityUser(user, dto);
-        
+        User checkUser = repo.findByUsername(user.getUsername());
+        if(checkUser!=null){
+            throw new GenericException("Registration Failed: User ["+user.getUsername()+"], already exists.");
+        }
         repo.save(user);
     }
-    
-    private void mapDtoToEntityUser(User usr, UserDTO dto) {
-        usr.setUsername(dto.getUsername());
-        usr.setPassword(encoder.encode(dto.getPassword()));
-        List<Role> roleList = dto.getRoles().stream()
-                .map(role-> roleRepo.findByName(role)).toList();
-                usr.setRoles(new HashSet<Role>(roleList));
+
+    private void mapDtoToEntityUser(User user, UserDTO userDto) {
+        user.setUsername(userDto.getUsername());
+        user.setPassword(encoder.encode(userDto.getPassword()));
+        List<Role> roleList = userDto.getRoles().stream()
+                .map(role-> 
+                    roleRepo.findByName(role)
+                    .orElseThrow(()->
+                        new ResourceNotFoundException("Role not found "+role))
+                ).toList();
+        user.setRoles(new HashSet<Role>(roleList));
     }
 }

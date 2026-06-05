@@ -1,6 +1,7 @@
 package org.orderpaymentsystem.service;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.orderpaymentsystem.common.enums.OrderLifecycleEvent;
 import org.orderpaymentsystem.common.enums.OrderStatus;
@@ -18,22 +19,35 @@ import jakarta.transaction.Transactional;
 @Service
 public class OrderService {
 
+    private final NotificationService notificationService;
+
     private final OrderRepository repo;
+
+    private final ProductService productService;
 
     private final PaymentService paymentService;
 
-    public OrderService(OrderRepository repo, PaymentService service) {
+    public OrderService(
+            OrderRepository repo, 
+            PaymentService service, 
+            ProductService productService,
+            NotificationService notificationService) {
         this.repo = repo;
         this.paymentService = service;
+        this.notificationService = notificationService;
+        this.productService = productService;
     }
 
     @Transactional
     public Long createOrder(OrderDTO dto) {
-        final Order order = Order.getOrderEntity(dto);
+        final Order order = OrderDTO.getOrderEntity(dto);
 
         markOrderStatus(order, OrderStatus.CREATED, OrderLifecycleEvent.CREATE);
-
-        return saveOrder(order).getId();
+        Long orderId = saveOrder(order).getId();
+        
+        notificationService.orderCreated(orderId);
+        
+        return orderId;
     }
 
     @Transactional
@@ -48,21 +62,22 @@ public class OrderService {
 
         final Order cancelledOrder = saveOrder(orderToCancel);
 
+        notificationService.orderCancelled(orderId);
+
         return OrderDTO.getOrderDTO(cancelledOrder);
     }
 
     @Transactional
     public OrderDTO updateOrder(OrderDTO orderDto) {
         final Order orderToupdate = getOrderById(orderDto.getOrderId());
-
-        validateOrderCanBeModified(orderDto, orderToupdate);
-
-        orderToupdate.setUpdatedAt(Instant.now());
-        orderToupdate.setAmount(orderDto.getAmount());
-        orderToupdate.setUserId(orderDto.getUserId());
-
+        validateOrderCanBeModified(orderDto, orderToupdate);  
+   
+        orderToupdate.setTotalAmount(orderDto.getTotalAmount());
+        
         final Order updated = saveOrder(orderToupdate);
 
+        notificationService.orderUpdated(updated.getId());
+        
         return OrderDTO.getOrderDTO(updated);
     }
 
@@ -97,6 +112,7 @@ public class OrderService {
     }
 
     private Order saveOrder(Order order) {
+        order.setUpdatedAt(Instant.now());
         return repo.save(order);
     }
 
@@ -107,5 +123,11 @@ public class OrderService {
             order.setCreatedAt(now);
         }
         order.setUpdatedAt(now);
+    }
+
+    public List<OrderDTO> getOrders(Long userId) {
+        List<Order> orders = repo.findByUserIdAndStatus(userId.toString(), OrderStatus.CREATED);
+        List<OrderDTO> userOrders = orders.stream().map(OrderDTO::getOrderDTO).toList();
+        return userOrders;
     }
 }

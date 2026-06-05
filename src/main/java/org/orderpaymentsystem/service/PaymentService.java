@@ -25,13 +25,16 @@ import jakarta.transaction.Transactional;
 @Service
 public class PaymentService {
 
+    private final NotificationService notificationService;
+
     private final PaymentRepository paymentRepo;
 
     private final OrderRepository orderRepo;
 
-    public PaymentService(PaymentRepository repository, OrderRepository orderRepo) {
+    public PaymentService(PaymentRepository repository, OrderRepository orderRepo, NotificationService notificationService) {
         this.paymentRepo = repository;
         this.orderRepo = orderRepo;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -45,14 +48,22 @@ public class PaymentService {
 
             markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderLifecycleEvent.CREATE);
 
-            return completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderStatus.PAYMENT_FAILED);
+            Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderStatus.PAYMENT_FAILED);
+            
+            notificationService.paymentFailed(paymentId);
+
+            return paymentId;
         } else {
 
             checkForDuplicatePayment(paymentDTO.getOrderId());
 
             markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.CREATE);
 
-            return completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderStatus.PAYMENT_DONE);
+            Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderStatus.PAYMENT_DONE);
+
+            notificationService.paymentSucceeded(paymentId);
+
+            return paymentId;
         }
     }
 
@@ -66,8 +77,11 @@ public class PaymentService {
         checkForDuplicatePayment(paymentToBeRetry.getOrderId());
 
         markPaymentStatus(paymentToBeRetry, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.UPDATE);
+        completePayment(paymentToBeRetry, PaymentStatus.PAYMENT_DONE, OrderStatus.PAYMENT_DONE);
 
-        return completePayment(paymentToBeRetry, PaymentStatus.PAYMENT_DONE, OrderStatus.PAYMENT_DONE);
+        notificationService.paymentSucceeded(paymentId);
+
+        return paymentId;
     }
 
     @Transactional
@@ -83,18 +97,19 @@ public class PaymentService {
 
         payments.stream().forEach(p -> p.setStatus(PaymentStatus.PAYMENT_CANCELLED));
         paymentRepo.saveAll(payments);
+        notificationService.paymentCancelled(orderId);
 
-    }
-
-    private List<Payment> getPaymentListForOrder(Long orderId) {
-        final List<Payment> payments = paymentRepo.findByOrderId(orderId);
-        return payments;
     }
 
     public PaymentDTO getPaymentDetails(Long paymentId) {
         final Payment payment = paymentRepo.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
         return PaymentDTO.getPaymentDTO(payment);
+    }
+
+    private List<Payment> getPaymentListForOrder(Long orderId) {
+        final List<Payment> payments = paymentRepo.findByOrderId(orderId);
+        return payments;
     }
 
     private Payment getPaymentById(long paymentId) {

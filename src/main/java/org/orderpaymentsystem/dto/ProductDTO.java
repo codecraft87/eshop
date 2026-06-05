@@ -5,11 +5,15 @@ import java.time.Instant;
 
 import org.orderpaymentsystem.entity.Product;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductDTO {
 
     private void set(Product product) {
@@ -17,6 +21,8 @@ public class ProductDTO {
         this.name = product.getName();
         this.description = product.getDescription();
         this.price = product.getPrice();
+        this.createdAt = product.getCreatedAt();
+        this.updatedAt = product.getUpdatedAt();
     }
 
     private Long id;
