@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.codecraft87.eshop.catalog.dto.ProductRequest;
-import io.github.codecraft87.eshop.catalog.entity.Product;
+import io.github.codecraft87.eshop.catalog.dto.ProductResponse;
 import io.github.codecraft87.eshop.catalog.service.ProductService;
 import io.github.codecraft87.eshop.common.dto.OperationResponse;
 
@@ -40,13 +40,13 @@ public class ProductController {
     }
     
     @GetMapping
-    public ResponseEntity<List<ProductRequest>> getProducts() {
-        List<ProductRequest> productList = productService.getAllProducts();
+    public ResponseEntity<List<ProductResponse>> getProducts() {
+        List<ProductResponse> productList = productService.getAllProducts();
         return ResponseEntity.ok().body(productList);
     }
     
     @GetMapping("/{productId}")
-    public ResponseEntity<Product> getProduct(@PathVariable("productId") Long pid) {
+    public ResponseEntity<ProductResponse> getProduct(@PathVariable("productId") Long pid) {
         return ResponseEntity
                 .ok()
                 .body(
@@ -56,8 +56,7 @@ public class ProductController {
     @PutMapping("/{productId}")
     public ResponseEntity<ProductRequest> updateProduct(@PathVariable("productId") Long pid,
         @RequestBody ProductRequest productDto) {
-        productDto.setId(pid);
-        ProductRequest updatedProduct = productService.updateProduct(productDto);
+        ProductRequest updatedProduct = productService.updateProduct(pid, productDto);
         return ResponseEntity.ok().body(updatedProduct);
     }
     

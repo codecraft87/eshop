@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.catalog.dto.ProductRequest;
+import io.github.codecraft87.eshop.catalog.dto.ProductResponse;
 import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.mapper.ProductMapper;
 import io.github.codecraft87.eshop.catalog.repository.ProductRepository;
@@ -36,38 +37,39 @@ public class ProductService {
         return productId;
     }
 
-    public Product getProductDetails(Long productId) {
-        final Product product = getProductById(productId); 
-        // define product response
-        return product;
+    public ProductResponse getProductDetails(Long productId) {
+        final Product product = findProductById(productId); 
+        
+        return ProductMapper.getProductResponse(product);
     }
 
-    public List<ProductRequest> getAllProducts(){
+    public List<ProductResponse> getAllProducts(){
         final List<Product> productList = repo.findAll();
-        final List<ProductRequest> productDtoList = 
+        final List<ProductResponse> productDtoList = 
                 productList
                     .stream()
-                    .map(ProductMapper::getProductRequest)
+                    .map(ProductMapper::getProductResponse)
                     .collect(Collectors.toList());
         return productDtoList;
     }
     
     @Transactional
-    public ProductRequest updateProduct(ProductRequest productDto) {
-        final Product productToUpdate = getProductById(productDto.getId());
+    public ProductResponse updateProduct(Long productId,
+            ProductRequest productRequest) {
+        final Product productToUpdate = findProductById(productId);
         productToUpdate.setUpdatedAt(Instant.now());
-        productToUpdate.setName(productDto.getName());
-        productToUpdate.setDescription(productDto.getDescription());
-        productToUpdate.setPrice(productDto.getPrice());
+        productToUpdate.setName(productRequest.getName());
+        productToUpdate.setDescription(productRequest.getDescription());
+        productToUpdate.setPrice(productRequest.getPrice());
         
         final Product updatedProduct = saveProduct(productToUpdate);
         notificationService.productUpdated(updatedProduct.getId());
-        return ProductRequest.getProductDTO(updatedProduct);
+        return ProductMapper.getProductResponse(updatedProduct);
     }
     
     @Transactional
     public Long deleteProduct(Long productId) {
-        final Product productToBeDeleted = getProductById(productId);
+        final Product productToBeDeleted = findProductById(productId);
         repo.delete(productToBeDeleted);
 
         notificationService.productDeleted(productId);
@@ -75,7 +77,7 @@ public class ProductService {
         return productId;
     }
 
-    private Product getProductById(Long productId) {
+    public Product findProductById(Long productId) {
         final Product product = repo
                     .findById(productId)
                     .orElseThrow(()-> 

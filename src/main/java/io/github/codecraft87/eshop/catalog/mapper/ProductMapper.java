@@ -1,6 +1,7 @@
 package io.github.codecraft87.eshop.catalog.mapper;
 
 import io.github.codecraft87.eshop.catalog.dto.ProductRequest;
+import io.github.codecraft87.eshop.catalog.dto.ProductResponse;
 import io.github.codecraft87.eshop.catalog.entity.Product;
 
 public class ProductMapper {
@@ -13,12 +14,14 @@ public class ProductMapper {
                 .build();
     }
     
-    public static ProductRequest getProductRequest(Product product) {
-        return ProductRequest.builder()
+    public static ProductResponse getProductResponse(Product product) {
+        return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
                 .build();
     }
 }

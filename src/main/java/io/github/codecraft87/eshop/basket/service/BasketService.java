@@ -167,7 +167,7 @@ public class BasketService {
     }
 
     private Product findProductById(Long productId) {
-        Product product = productService.getProductDetails(productId);
+        Product product = productService.findProductById(productId);
         return product;
     }
 

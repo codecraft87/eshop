@@ -1,5 +1,6 @@
 package io.github.codecraft87.eshop.catalog.dto;
 
+import java.time.Instant;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,15 +10,14 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductRequest {
+@SuperBuilder
+public class ProductResponse extends ProductRequest {
 
-    private String name;
+    private Long id;
     
-    private String description;
-    
-    private Double price;
-   
+    private Instant createdAt;
+
+    private Instant updatedAt;
 }

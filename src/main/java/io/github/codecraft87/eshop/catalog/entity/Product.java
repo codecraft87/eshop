@@ -2,7 +2,6 @@ package io.github.codecraft87.eshop.catalog.entity;
 
 import java.time.Instant;
 
-import io.github.codecraft87.eshop.catalog.dto.ProductRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,13 +24,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Product {
 
-    private void set(ProductRequest dto) {
-       this.id = dto.getId();
-       this.name = dto.getName();
-       this.description = dto.getDescription();
-       this.price = dto.getPrice();
-    }
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -50,10 +42,4 @@ public class Product {
 
     @Column(name = "UPDATED_AT")
     private Instant updatedAt;
-    
-    public static Product getProductEntity(ProductRequest dto) {
-        Product product = new Product();
-        product.set(dto);
-        return product;
-    }
 }
