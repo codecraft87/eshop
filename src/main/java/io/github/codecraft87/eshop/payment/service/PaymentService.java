@@ -10,34 +10,30 @@ import io.github.codecraft87.eshop.common.enums.OrderStatus;
 import io.github.codecraft87.eshop.common.enums.PaymentStatus;
 import io.github.codecraft87.eshop.exceptions.DuplicatePaymentException;
 import io.github.codecraft87.eshop.exceptions.InvalidOrderStateForPaymentException;
-import io.github.codecraft87.eshop.exceptions.OrderNotFoundForPaymentException;
 import io.github.codecraft87.eshop.exceptions.PaymentCannotBeCancelledException;
 import io.github.codecraft87.eshop.exceptions.PaymentCannotBeRetriedException;
 import io.github.codecraft87.eshop.exceptions.PaymentNotFoundException;
-import io.github.codecraft87.eshop.notification.service.NotificationService;
+import io.github.codecraft87.eshop.notification.service.NotificationModuleService;
 import io.github.codecraft87.eshop.order.entity.Order;
-import io.github.codecraft87.eshop.order.repository.OrderRepository;
+import io.github.codecraft87.eshop.order.service.OrderModuleService;
 import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
 import io.github.codecraft87.eshop.payment.dto.PaymentResponse;
 import io.github.codecraft87.eshop.payment.entity.Payment;
 import io.github.codecraft87.eshop.payment.mapper.PaymentMapper;
 import io.github.codecraft87.eshop.payment.repository.PaymentRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
-public class PaymentService {
+public class PaymentService implements PaymentModuleService {
 
-    private final NotificationService notificationService;
+    private final NotificationModuleService notificationService;
 
     private final PaymentRepository paymentRepo;
 
-    private final OrderRepository orderRepo;
+    private final OrderModuleService orderService;
     
-    public PaymentService(PaymentRepository repository, OrderRepository orderRepo, NotificationService notificationService) {
-        this.paymentRepo = repository;
-        this.orderRepo = orderRepo;
-        this.notificationService = notificationService;
-    }
 
     @Transactional
     public Long processPayment(PaymentRequest paymentRequest) {
@@ -155,30 +151,22 @@ public class PaymentService {
     }
 
     private void validatePaymentRequest(Long orderId) {
-        final Order order = getOrderById(orderId);
+        final Order order = orderService.getOrder(orderId);
         if (order.getStatus() != OrderStatus.CREATED) {
             throw new InvalidOrderStateForPaymentException(order.getId());
         }
     }
 
-    private Order getOrderById(Long orderId) {
-        final Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> 
-                new OrderNotFoundForPaymentException(orderId));
-        return order;
-    }
-
     private void validateRePaymentRequest(Long orderId) {
-        final Order order = getOrderById(orderId);
+        final Order order = orderService.getOrder(orderId);
         if (order.getStatus() != OrderStatus.PAYMENT_FAILED) {
             throw new PaymentCannotBeRetriedException(orderId);
         }
     }
 
     private void updateOrderStatus(Long orderId, OrderStatus status) {
-        final Order order = getOrderById(orderId);
+        final Order order = orderService.getOrder(orderId);
         order.setStatus(status);
-        order.setUpdatedAt(Instant.now());
-        orderRepo.save(order);
+        orderService.saveOrder(order);
     }
 }

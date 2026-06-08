@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class NotificationService {
+public class NotificationService implements NotificationModuleService {
 
     public void orderCreated(Long orderId){
         log.info("Notification: Order {} created "+orderId);

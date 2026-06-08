@@ -17,32 +17,24 @@ import io.github.codecraft87.eshop.order.dto.OrderResponse;
 import io.github.codecraft87.eshop.order.entity.Order;
 import io.github.codecraft87.eshop.order.mapper.OrderMapper;
 import io.github.codecraft87.eshop.order.repository.OrderRepository;
-import io.github.codecraft87.eshop.payment.service.PaymentService;
+import io.github.codecraft87.eshop.payment.service.PaymentModuleService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
-public class OrderService {
+public class OrderService implements OrderModuleService {
 
     private final NotificationService notificationService;
 
-    private final OrderRepository repo;
+    private final OrderRepository orderRepository;
 
-
-    private final PaymentService paymentService;
-
-    public OrderService(
-            OrderRepository repo, 
-            PaymentService service, 
-            NotificationService notificationService) {
-        this.repo = repo;
-        this.paymentService = service;
-        this.notificationService = notificationService;
-    }
+    private final PaymentModuleService paymentService;
 
     @Transactional
-    public Long createOrder(OrderRequest dto) {
+    public Long createOrder(OrderRequest orderRequest) {
         
-        final Order order = OrderMapper.getOrderEntity(dto);
+        final Order order = OrderMapper.getOrderEntity(orderRequest);
 
         markOrderStatus(order, OrderStatus.CREATED, 
                             OrderLifecycleEvent.CREATE);
@@ -91,6 +83,10 @@ public class OrderService {
         return OrderMapper.getOrderResponse(orderDetails);
     }
 
+    public Order getOrder(Long orderId) {
+        final Order order = getOrderById(orderId);
+        return order;
+    }
     private void validateOrderCanBeModified(Long orderId, Order orderToupdate) {
         if (orderToupdate.getStatus() == OrderStatus.ORDER_CANCELLED) {
             throw new CancelledOrderCannotBeModifiedException(orderId);
@@ -112,7 +108,7 @@ public class OrderService {
     }
 
     private Order getOrderById(Long orderId) {
-        final Order order = repo
+        final Order order = orderRepository
                         .findById(orderId)
                         .orElseThrow(
                                 () -> new OrderNotFoundException(
@@ -120,9 +116,9 @@ public class OrderService {
         return order;
     }
 
-    private Order saveOrder(Order order) {
+    public Order saveOrder(Order order) {
         order.setUpdatedAt(Instant.now());
-        return repo.save(order);
+        return orderRepository.save(order);
     }
 
     private void markOrderStatus(Order order, OrderStatus orderStatus, OrderLifecycleEvent orderlifecycleEvent) {
@@ -135,7 +131,7 @@ public class OrderService {
     }
 
     public List<OrderResponse> getOrders(Long userId) {
-        List<Order> orders = repo
+        List<Order> orders = orderRepository
                 .findByUserIdAndStatus(
                         userId.toString(), 
                         OrderStatus.CREATED);

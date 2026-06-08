@@ -12,19 +12,16 @@ import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.mapper.ProductMapper;
 import io.github.codecraft87.eshop.catalog.repository.ProductRepository;
 import io.github.codecraft87.eshop.exceptions.ProductNotFoundException;
-import io.github.codecraft87.eshop.notification.service.NotificationService;
+import io.github.codecraft87.eshop.notification.service.NotificationModuleService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
-public class ProductService {
+public class ProductService implements CatalogModuleService {
 
-    private final NotificationService notificationService;
-    private ProductRepository repo;
-    
-    public ProductService(ProductRepository productRepository, NotificationService notificationService) {
-        this.repo = productRepository;
-        this.notificationService = notificationService;
-    }
+    private final NotificationModuleService notificationService;
+    private final ProductRepository catalogRepository;
     
     @Transactional
     public Long addProduct(ProductRequest productRequest) {
@@ -38,13 +35,13 @@ public class ProductService {
     }
 
     public ProductResponse getProductDetails(Long productId) {
-        final Product product = findProductById(productId); 
+        final Product product = getProduct(productId); 
         
         return ProductMapper.getProductResponse(product);
     }
 
     public List<ProductResponse> getAllProducts(){
-        final List<Product> productList = repo.findAll();
+        final List<Product> productList = catalogRepository.findAll();
         final List<ProductResponse> productDtoList = 
                 productList
                     .stream()
@@ -56,7 +53,7 @@ public class ProductService {
     @Transactional
     public ProductResponse updateProduct(Long productId,
             ProductRequest productRequest) {
-        final Product productToUpdate = findProductById(productId);
+        final Product productToUpdate = getProduct(productId);
         productToUpdate.setUpdatedAt(Instant.now());
         productToUpdate.setName(productRequest.getName());
         productToUpdate.setDescription(productRequest.getDescription());
@@ -69,16 +66,16 @@ public class ProductService {
     
     @Transactional
     public Long deleteProduct(Long productId) {
-        final Product productToBeDeleted = findProductById(productId);
-        repo.delete(productToBeDeleted);
+        final Product productToBeDeleted = getProduct(productId);
+        catalogRepository.delete(productToBeDeleted);
 
         notificationService.productDeleted(productId);
         
         return productId;
     }
 
-    public Product findProductById(Long productId) {
-        final Product product = repo
+    public Product getProduct(Long productId) {
+        final Product product = catalogRepository
                     .findById(productId)
                     .orElseThrow(()-> 
                             new ProductNotFoundException(productId));
@@ -87,6 +84,6 @@ public class ProductService {
     
     private Product saveProduct(Product product) {
         product.setUpdatedAt(Instant.now());
-        return repo.save(product);
+        return catalogRepository.save(product);
     }
 }

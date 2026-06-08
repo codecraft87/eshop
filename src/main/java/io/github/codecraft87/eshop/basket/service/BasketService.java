@@ -14,33 +14,25 @@ import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
 import io.github.codecraft87.eshop.catalog.entity.Product;
-import io.github.codecraft87.eshop.catalog.service.ProductService;
+import io.github.codecraft87.eshop.catalog.service.CatalogModuleService;
 import io.github.codecraft87.eshop.common.enums.BasketStatus;
 import io.github.codecraft87.eshop.common.enums.OrderStatus;
 import io.github.codecraft87.eshop.exceptions.BasketNotFoundException;
-import io.github.codecraft87.eshop.notification.service.NotificationService;
-import io.github.codecraft87.eshop.order.dto.OrderRequest;
+import io.github.codecraft87.eshop.notification.service.NotificationModuleService;
 import io.github.codecraft87.eshop.order.dto.OrderItemRequest;
-import io.github.codecraft87.eshop.order.service.OrderService;
+import io.github.codecraft87.eshop.order.dto.OrderRequest;
+import io.github.codecraft87.eshop.order.service.OrderModuleService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
-public class BasketService {
+public class BasketService implements BasketModuleService {
 
     private final BasketRepository basketRepository;
-    private final ProductService productService;
-    private final OrderService orderService;
-    private final NotificationService notificationService;
-
-    public BasketService(BasketRepository basketRepository,
-            ProductService productService,
-            OrderService orderService,
-            NotificationService notificationService) {
-        this.basketRepository = basketRepository;
-        this.productService = productService;
-        this.orderService = orderService;
-        this.notificationService = notificationService;
-    }
+    private final CatalogModuleService catalogService;
+    private final OrderModuleService orderService;
+    private final NotificationModuleService notificationService;
 
     public Long saveBasket(BasketRequest basketRequest) {
         Basket activeBasket = getActiveBasketForUser(basketRequest);
@@ -167,7 +159,7 @@ public class BasketService {
     }
 
     private Product findProductById(Long productId) {
-        Product product = productService.findProductById(productId);
+        Product product = catalogService.getProduct(productId);
         return product;
     }
 
