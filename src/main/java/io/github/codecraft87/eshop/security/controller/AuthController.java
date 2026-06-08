@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.codecraft87.eshop.security.model.UserDTO;
+import io.github.codecraft87.eshop.security.dto.UserRequest;
 import io.github.codecraft87.eshop.security.service.JwtService;
 import io.github.codecraft87.eshop.security.service.UserService;
 
@@ -32,13 +32,13 @@ public class AuthController {
         this.jwts = jwts;
     }
     @PostMapping("register")
-    public ResponseEntity<String> registerUser(@RequestBody UserDTO user) {
+    public ResponseEntity<String> registerUser(@RequestBody UserRequest user) {
         userService.saveUser(user);
         return ResponseEntity.ok(user.getUsername() + " registered");
     }
     
     @PostMapping("login")
-    public String login(@RequestBody UserDTO user) {
+    public String login(@RequestBody UserRequest user) {
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         if(authentication.isAuthenticated()) {

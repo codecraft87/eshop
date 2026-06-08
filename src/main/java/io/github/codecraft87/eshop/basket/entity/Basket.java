@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "basket")
+@Table(name = "basket", schema = "basket")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,17 +33,17 @@ public class Basket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "USER_ID")
+    @Column(name = "user_id")
     private Long userId;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "BASKET_STATUS")
+    @Column(name = "basket_status")
     private BasketStatus status;
     
-    @Column(name = "CREATED_AT")
+    @Column(name = "created_at")
     private Instant createdAt;
 
-    @Column(name = "UPDATED_AT")
+    @Column(name = "updated_at")
     private Instant updatedAt;
     
     @OneToMany(mappedBy = "basket", cascade = CascadeType.ALL, orphanRemoval = true)

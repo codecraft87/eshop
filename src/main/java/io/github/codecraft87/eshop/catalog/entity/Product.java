@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "product")
+@Table(name = "product", schema = "catalog")
 
 @Getter
 @Setter
@@ -28,18 +28,18 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
       
-    @Column(name = "PRODUCT_NAME")
+    @Column(name = "product_name")
     private String name;
     
-    @Column(name = "PRODUCT_DESCRIPTION")
+    @Column(name = "product_description")
     private String description;
     
-    @Column(name = "PRODUCT_PRICE")
+    @Column(name = "product_price")
     private Double price;
     
-    @Column(name = "CREATED_AT")
+    @Column(name = "created_at")
     private Instant createdAt;
 
-    @Column(name = "UPDATED_AT")
+    @Column(name = "updated_at")
     private Instant updatedAt;
 }

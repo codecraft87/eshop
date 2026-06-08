@@ -87,13 +87,16 @@ public class PaymentService implements PaymentModuleService {
         final List<Payment> payments = getPaymentListForOrder(orderId);
 
         final boolean hasInvalidStatus = payments.stream().anyMatch(
-                p -> p.getStatus() == PaymentStatus.PAYMENT_DONE || p.getStatus() == PaymentStatus.PAYMENT_CANCELLED);
+                p -> p.getStatus() == PaymentStatus.PAYMENT_DONE 
+                || p.getStatus() == PaymentStatus.PAYMENT_CANCELLED);
 
         if (hasInvalidStatus) {
             throw new PaymentCannotBeCancelledException(orderId);
         }
 
-        payments.stream().forEach(p -> p.setStatus(PaymentStatus.PAYMENT_CANCELLED));
+        payments.stream()
+                .forEach(
+                        p -> p.setStatus(PaymentStatus.PAYMENT_CANCELLED));
         paymentRepo.saveAll(payments);
         notificationService.paymentCancelled(orderId);
 

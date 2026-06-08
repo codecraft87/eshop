@@ -24,7 +24,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", schema = "ordering")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -34,20 +34,20 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "USER_ID")
+    @Column(name = "user_id")
     private String userId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "ORDER_STATUS")
+    @Column(name = "order_status")
     private OrderStatus status;
 
-    @Column(name = "AMOUNT")
+    @Column(name = "amount")
     private double totalAmount;
 
-    @Column(name = "CREATED_AT")
+    @Column(name = "created_at")
     private Instant createdAt;
 
-    @Column(name = "UPDATED_AT")
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     @Builder.Default

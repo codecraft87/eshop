@@ -17,7 +17,6 @@ import io.github.codecraft87.eshop.order.dto.OrderResponse;
 import io.github.codecraft87.eshop.order.entity.Order;
 import io.github.codecraft87.eshop.order.mapper.OrderMapper;
 import io.github.codecraft87.eshop.order.repository.OrderRepository;
-import io.github.codecraft87.eshop.payment.service.PaymentModuleService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -28,8 +27,6 @@ public class OrderService implements OrderModuleService {
     private final NotificationService notificationService;
 
     private final OrderRepository orderRepository;
-
-    private final PaymentModuleService paymentService;
 
     @Transactional
     public Long createOrder(OrderRequest orderRequest) {
@@ -51,7 +48,7 @@ public class OrderService implements OrderModuleService {
 
         validateIfOrderEligibleForCancellation(orderId, orderToCancel);
 
-        paymentService.handleOrderCancellation(orderId);
+//        paymentService.handleOrderCancellation(orderId);
 
         markOrderStatus(orderToCancel, OrderStatus.ORDER_CANCELLED, OrderLifecycleEvent.UPDATE);
 
@@ -132,9 +129,9 @@ public class OrderService implements OrderModuleService {
 
     public List<OrderResponse> getOrders(Long userId) {
         List<Order> orders = orderRepository
-                .findByUserIdAndStatus(
-                        userId.toString(), 
-                        OrderStatus.CREATED);
+                                .findByUserIdAndStatus(
+                                            userId.toString(), 
+                                            OrderStatus.CREATED);
         List<OrderResponse> userOrders = orders.stream()
                 .map(OrderMapper::getOrderResponse).toList();
         return userOrders;

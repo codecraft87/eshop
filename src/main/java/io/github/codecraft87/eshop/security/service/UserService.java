@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.exceptions.GenericException;
 import io.github.codecraft87.eshop.exceptions.ResourceNotFoundException;
+import io.github.codecraft87.eshop.security.dto.UserRequest;
 import io.github.codecraft87.eshop.security.entity.Role;
 import io.github.codecraft87.eshop.security.entity.User;
-import io.github.codecraft87.eshop.security.model.UserDTO;
 import io.github.codecraft87.eshop.security.repository.RoleRepository;
 import io.github.codecraft87.eshop.security.repository.UserRepository;
 
@@ -30,7 +30,7 @@ public class UserService {
         this.roleRepo = roleRepo;
         this.encoder = encoder;
     }
-    public void saveUser(UserDTO dto) {
+    public void saveUser(UserRequest dto) {
         User user = new User();
         mapDtoToEntityUser(user, dto);
         User checkUser = repo.findByUsername(user.getUsername());
@@ -40,7 +40,7 @@ public class UserService {
         repo.save(user);
     }
 
-    private void mapDtoToEntityUser(User user, UserDTO userDto) {
+    private void mapDtoToEntityUser(User user, UserRequest userDto) {
         user.setUsername(userDto.getUsername());
         user.setPassword(encoder.encode(userDto.getPassword()));
         List<Role> roleList = userDto.getRoles().stream()

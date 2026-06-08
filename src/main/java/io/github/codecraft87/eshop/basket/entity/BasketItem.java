@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "BASKET_ITEMS")
+@Table(name = "basket_item", schema = "basket")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,13 +28,13 @@ public class BasketItem {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "BASKET_ID")
+    @JoinColumn(name = "basket_id")
     private Basket basket;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PRODUCT_ID")
+    @JoinColumn(name = "product_id")
     private Product product;
     
-    @Column(name = "QUANTITY")
+    @Column(name = "quantity")
     private Integer quantity;
 }

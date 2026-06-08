@@ -12,6 +12,7 @@ import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
+import io.github.codecraft87.eshop.basket.mapper.BasketMapper;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
 import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.service.CatalogModuleService;
@@ -56,8 +57,9 @@ public class BasketService implements BasketModuleService {
         if(basket!=null) {
             basketDetails = basket.getItems()
                                 .stream()
-                                .map(BasketResponse::getBasketItemResponse)
+                                .map(BasketMapper::getBasketItemResponse)
                                 .toList();
+            
         }else {
             throw new BasketNotFoundException(userId);
         }

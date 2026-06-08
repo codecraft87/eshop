@@ -1,7 +1,6 @@
 package io.github.codecraft87.eshop.basket.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

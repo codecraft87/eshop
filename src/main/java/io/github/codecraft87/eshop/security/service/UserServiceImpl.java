@@ -5,8 +5,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import io.github.codecraft87.eshop.security.dto.UserPrinicipal;
 import io.github.codecraft87.eshop.security.entity.User;
-import io.github.codecraft87.eshop.security.model.UserPrinicipal;
 import io.github.codecraft87.eshop.security.repository.UserRepository;
 
 @Service

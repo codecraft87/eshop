@@ -21,7 +21,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "ORDER_ITEM")
+@Table(name = "order_item", schema = "ordering")
 public class OrderItem {
 
     @Id
@@ -29,18 +29,18 @@ public class OrderItem {
     private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ORDER_ID")
+    @JoinColumn(name = "order_id")
     private Order order;
 
-    @Column(name = "PRODUCT_ID")
+    @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "PRODUCT_NAME")
+    @Column(name = "product_name")
     private String productName;
 
-    @Column(name = "QUANTITY")
+    @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "PRICE")
+    @Column(name = "price")
     private Double price;
 }

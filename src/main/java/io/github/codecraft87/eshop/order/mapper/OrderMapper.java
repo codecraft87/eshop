@@ -12,6 +12,9 @@ public class OrderMapper {
     public static OrderResponse getOrderResponse(
         Order order){
         return OrderResponse.builder()
+        .orderId(
+                order.getId()
+                )
         .userId(
             order.getUserId()
         )
@@ -27,6 +30,12 @@ public class OrderMapper {
                 .map(OrderMapper::getOrderItemRequest)
                 .toList()
         )
+        .createdAt(
+                order.getCreatedAt()
+                )
+        .updatedAt(
+                order.getUpdatedAt()
+                )
         .build();
 }
 

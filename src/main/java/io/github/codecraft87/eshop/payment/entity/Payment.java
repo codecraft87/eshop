@@ -21,36 +21,26 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "payments")
+@Table(name = "payments", schema = "payment")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Payment {
 
-    private void set(PaymentRequest dto) {
-        this.orderId = dto.getOrderId();
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ORDER_ID")
+    @Column(name = "order_id")
     private Long orderId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "PAYMENT_STATUS")
+    @Column(name = "payment_status")
     private PaymentStatus status;
 
-    @Column(name = "CREATED_AT")
+    @Column(name = "created_at")
     private Instant createdAt;
 
-    @Column(name = "UPDATED_AT")
+    @Column(name = "updated_at")
     private Instant updatedAt;
-
-    public static Payment getPaymentEntity(PaymentRequest dto) {
-        Payment payment = new Payment();
-        payment.set(dto);
-        return payment;
-    }
 }

@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.security.model;
+package io.github.codecraft87.eshop.security.dto;
 
 import java.util.Collection;
 
