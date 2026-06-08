@@ -19,8 +19,8 @@ import io.github.codecraft87.eshop.common.enums.BasketStatus;
 import io.github.codecraft87.eshop.common.enums.OrderStatus;
 import io.github.codecraft87.eshop.exceptions.BasketNotFoundException;
 import io.github.codecraft87.eshop.notification.service.NotificationService;
-import io.github.codecraft87.eshop.order.dto.OrderDTO;
-import io.github.codecraft87.eshop.order.dto.OrderItemDTO;
+import io.github.codecraft87.eshop.order.dto.OrderRequest;
+import io.github.codecraft87.eshop.order.dto.OrderItemRequest;
 import io.github.codecraft87.eshop.order.service.OrderService;
 import jakarta.transaction.Transactional;
 
@@ -178,7 +178,7 @@ public class BasketService {
 
     private void placeAnOrder(Basket basket) {
        
-        OrderDTO orderRequest = new OrderDTO();
+        OrderRequest orderRequest = new OrderRequest();
         orderRequest.setStatus(OrderStatus.CREATED);
         orderRequest.setUserId(basket.getUserId().toString());
         orderRequest.setOrderItems(basket.getItems()
@@ -196,8 +196,8 @@ public class BasketService {
         orderService.createOrder(orderRequest);
     }
 
-    private OrderItemDTO getOrderItemDTO(BasketItem basketItem) {
-        return OrderItemDTO.builder()
+    private OrderItemRequest getOrderItemDTO(BasketItem basketItem) {
+        return OrderItemRequest.builder()
                 .productId(basketItem.getProduct().getId())
                 .productName(basketItem.getProduct().getName())
                 .price(basketItem.getProduct().getPrice())

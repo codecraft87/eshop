@@ -10,7 +10,6 @@ import io.github.codecraft87.eshop.common.enums.OrderStatus;
 import io.github.codecraft87.eshop.common.enums.PaymentStatus;
 import io.github.codecraft87.eshop.exceptions.DuplicatePaymentException;
 import io.github.codecraft87.eshop.exceptions.InvalidOrderStateForPaymentException;
-import io.github.codecraft87.eshop.exceptions.OrderNotFoundException;
 import io.github.codecraft87.eshop.exceptions.OrderNotFoundForPaymentException;
 import io.github.codecraft87.eshop.exceptions.PaymentCannotBeCancelledException;
 import io.github.codecraft87.eshop.exceptions.PaymentCannotBeRetriedException;
@@ -18,8 +17,10 @@ import io.github.codecraft87.eshop.exceptions.PaymentNotFoundException;
 import io.github.codecraft87.eshop.notification.service.NotificationService;
 import io.github.codecraft87.eshop.order.entity.Order;
 import io.github.codecraft87.eshop.order.repository.OrderRepository;
-import io.github.codecraft87.eshop.payment.dto.PaymentDTO;
+import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
+import io.github.codecraft87.eshop.payment.dto.PaymentResponse;
 import io.github.codecraft87.eshop.payment.entity.Payment;
+import io.github.codecraft87.eshop.payment.mapper.PaymentMapper;
 import io.github.codecraft87.eshop.payment.repository.PaymentRepository;
 import jakarta.transaction.Transactional;
 
@@ -31,7 +32,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepo;
 
     private final OrderRepository orderRepo;
-
+    
     public PaymentService(PaymentRepository repository, OrderRepository orderRepo, NotificationService notificationService) {
         this.paymentRepo = repository;
         this.orderRepo = orderRepo;
@@ -39,13 +40,13 @@ public class PaymentService {
     }
 
     @Transactional
-    public Long processPayment(PaymentDTO paymentDTO) {
+    public Long processPayment(PaymentRequest paymentRequest) {
 
-        validatePaymentRequest(paymentDTO.getOrderId());
+        validatePaymentRequest(paymentRequest.getOrderId());
 
-        final Payment paymentToBeProcesed = Payment.getPaymentEntity(paymentDTO);
+        final Payment paymentToBeProcesed = PaymentMapper.getPaymentEntity(paymentRequest);
 
-        if (paymentDTO.isSimulateFailure()) {
+        if (paymentRequest.isSimulateFailure()) {
 
             markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderLifecycleEvent.CREATE);
 
@@ -56,7 +57,7 @@ public class PaymentService {
             return paymentId;
         } else {
 
-            checkForDuplicatePayment(paymentDTO.getOrderId());
+            checkForDuplicatePayment(paymentRequest.getOrderId());
 
             markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.CREATE);
 
@@ -102,10 +103,11 @@ public class PaymentService {
 
     }
 
-    public PaymentDTO getPaymentDetails(Long paymentId) {
-        final Payment payment = paymentRepo.findById(paymentId)
+    public PaymentResponse getPaymentDetails(Long paymentId) {
+        final Payment payment = 
+                paymentRepo.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
-        return PaymentDTO.getPaymentDTO(payment);
+        return PaymentMapper.getPaymentResponse(payment);
     }
 
     private List<Payment> getPaymentListForOrder(Long orderId) {
@@ -114,8 +116,10 @@ public class PaymentService {
     }
 
     private Payment getPaymentById(long paymentId) {
-        final Payment paymentToBeRetry = paymentRepo.findById(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+        final Payment paymentToBeRetry = 
+                paymentRepo.findById(paymentId)
+                .orElseThrow(() -> 
+                    new PaymentNotFoundException(paymentId));
         return paymentToBeRetry;
     }
 
@@ -127,10 +131,17 @@ public class PaymentService {
 
     private Long completePayment(Payment paymentToBeProcesed, PaymentStatus paymentStatus, OrderStatus orderStatus) {
 
-        final Long paymentId = paymentRepo.save(paymentToBeProcesed).getId();
+        final Payment payment = savePayment(paymentToBeProcesed);
 
-        updateOrderStatus(paymentToBeProcesed.getOrderId(), orderStatus);
-        return paymentId;
+        updateOrderStatus(payment.getOrderId(), orderStatus);
+        return payment.getId();
+    }
+    
+    private Payment savePayment(Payment payment) {
+        payment.setUpdatedAt(Instant.now());
+        Payment savedPayment = paymentRepo.save(payment);
+        return savedPayment;
+        
     }
 
     private void markPaymentStatus(Payment paymentToBeProcesed, PaymentStatus paymentStatus,
@@ -152,7 +163,8 @@ public class PaymentService {
 
     private Order getOrderById(Long orderId) {
         final Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundForPaymentException(orderId));
+                .orElseThrow(() -> 
+                new OrderNotFoundForPaymentException(orderId));
         return order;
     }
 
@@ -164,7 +176,7 @@ public class PaymentService {
     }
 
     private void updateOrderStatus(Long orderId, OrderStatus status) {
-        final Order order = orderRepo.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+        final Order order = getOrderById(orderId);
         order.setStatus(status);
         order.setUpdatedAt(Instant.now());
         orderRepo.save(order);

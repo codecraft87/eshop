@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.codecraft87.eshop.common.enums.OrderStatus;
-import io.github.codecraft87.eshop.order.dto.OrderDTO;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -54,12 +53,4 @@ public class Order {
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
-
-    public void set(OrderDTO dto) {
-        if (dto.getOrderId() != null) {
-            this.id = dto.getOrderId();
-        }
-        this.totalAmount = dto.getTotalAmount();
-        this.userId = dto.getUserId();
-    }
 }

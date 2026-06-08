@@ -1,6 +1,5 @@
 package io.github.codecraft87.eshop.order.entity;
 
-import io.github.codecraft87.eshop.order.dto.OrderItemDTO;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

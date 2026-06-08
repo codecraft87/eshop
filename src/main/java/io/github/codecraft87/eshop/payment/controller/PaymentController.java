@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.codecraft87.eshop.payment.dto.PaymentDTO;
+import io.github.codecraft87.eshop.common.dto.OperationResponse;
+import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
+import io.github.codecraft87.eshop.payment.dto.PaymentResponse;
 import io.github.codecraft87.eshop.payment.service.PaymentService;
 import jakarta.validation.Valid;
 
@@ -30,20 +32,30 @@ public class PaymentController {
     }
 
     @PostMapping
-    public ResponseEntity<PaymentResponse> processPayment(@Valid @RequestBody PaymentDTO paymentDTO) {
-        Long paymentId = paymentService.processPayment(paymentDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new PaymentResponse(paymentId, "Payment processed"));
+    public ResponseEntity<OperationResponse> processPayment(
+                        @Valid @RequestBody PaymentRequest paymentRequest) {
+        Long paymentId = paymentService.processPayment(paymentRequest);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new OperationResponse(paymentId, "Payment processed"));
     }
 
     @PutMapping("/{paymentId}/retry")
-    public ResponseEntity<PaymentResponse> retryPayment(@PathVariable("paymentId") Long paymentId) {
+    public ResponseEntity<OperationResponse> retryPayment(
+                    @PathVariable("paymentId") Long paymentId) {
         Long payId = paymentService.retryPayment(paymentId);
-        return ResponseEntity.status(HttpStatus.OK).body(new PaymentResponse(payId, "Payment processed"));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new OperationResponse(payId, "Payment processed"));
     }
 
     @GetMapping("/{paymentId}")
-    public ResponseEntity<PaymentDTO> getPaymentDetails(@PathVariable("paymentId") Long paymentId) {
-        PaymentDTO dto = paymentService.getPaymentDetails(paymentId);
-        return ResponseEntity.ok().body(dto);
+    public ResponseEntity<PaymentResponse> getPaymentDetails(
+                    @PathVariable("paymentId") Long paymentId) {
+        PaymentResponse paymentResponse = paymentService.getPaymentDetails(
+                                                        paymentId);
+        return ResponseEntity
+                .ok()
+                .body(paymentResponse);
     }
 }

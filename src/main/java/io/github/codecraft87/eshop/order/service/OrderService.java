@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import io.github.codecraft87.eshop.catalog.service.ProductService;
 import io.github.codecraft87.eshop.common.enums.OrderLifecycleEvent;
 import io.github.codecraft87.eshop.common.enums.OrderStatus;
 import io.github.codecraft87.eshop.exceptions.CancelledOrderCannotBeModifiedException;
@@ -13,8 +12,10 @@ import io.github.codecraft87.eshop.exceptions.OrderAlreadyCancelledException;
 import io.github.codecraft87.eshop.exceptions.OrderCannotBeModifiedException;
 import io.github.codecraft87.eshop.exceptions.OrderNotFoundException;
 import io.github.codecraft87.eshop.notification.service.NotificationService;
-import io.github.codecraft87.eshop.order.dto.OrderDTO;
+import io.github.codecraft87.eshop.order.dto.OrderRequest;
+import io.github.codecraft87.eshop.order.dto.OrderResponse;
 import io.github.codecraft87.eshop.order.entity.Order;
+import io.github.codecraft87.eshop.order.mapper.OrderMapper;
 import io.github.codecraft87.eshop.order.repository.OrderRepository;
 import io.github.codecraft87.eshop.payment.service.PaymentService;
 import jakarta.transaction.Transactional;
@@ -26,26 +27,25 @@ public class OrderService {
 
     private final OrderRepository repo;
 
-    private final ProductService productService;
 
     private final PaymentService paymentService;
 
     public OrderService(
             OrderRepository repo, 
             PaymentService service, 
-            ProductService productService,
             NotificationService notificationService) {
         this.repo = repo;
         this.paymentService = service;
         this.notificationService = notificationService;
-        this.productService = productService;
     }
 
     @Transactional
-    public Long createOrder(OrderDTO dto) {
-        final Order order = OrderDTO.getOrderEntity(dto);
+    public Long createOrder(OrderRequest dto) {
+        
+        final Order order = OrderMapper.getOrderEntity(dto);
 
-        markOrderStatus(order, OrderStatus.CREATED, OrderLifecycleEvent.CREATE);
+        markOrderStatus(order, OrderStatus.CREATED, 
+                            OrderLifecycleEvent.CREATE);
         Long orderId = saveOrder(order).getId();
         
         notificationService.orderCreated(orderId);
@@ -54,7 +54,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDTO cancelOrder(Long orderId) {
+    public OrderResponse cancelOrder(Long orderId) {
         final Order orderToCancel = getOrderById(orderId);
 
         validateIfOrderEligibleForCancellation(orderId, orderToCancel);
@@ -67,13 +67,15 @@ public class OrderService {
 
         notificationService.orderCancelled(orderId);
 
-        return OrderDTO.getOrderDTO(cancelledOrder);
+        return OrderMapper.getOrderResponse(cancelledOrder);
     }
 
     @Transactional
-    public OrderDTO updateOrder(OrderDTO orderDto) {
-        final Order orderToupdate = getOrderById(orderDto.getOrderId());
-        validateOrderCanBeModified(orderDto, orderToupdate);  
+    public OrderRequest updateOrder(
+            Long orderId, 
+            OrderRequest orderDto) {
+        final Order orderToupdate = getOrderById(orderId);
+        validateOrderCanBeModified(orderId, orderToupdate);  
    
         orderToupdate.setTotalAmount(orderDto.getTotalAmount());
         
@@ -81,22 +83,22 @@ public class OrderService {
 
         notificationService.orderUpdated(updated.getId());
         
-        return OrderDTO.getOrderDTO(updated);
+        return OrderMapper.getOrderResponse(updated);
     }
 
-    public OrderDTO getOrderDetails(Long orderId) {
+    public OrderResponse getOrderDetails(Long orderId) {
         final Order orderDetails = getOrderById(orderId);
-        return OrderDTO.getOrderDTO(orderDetails);
+        return OrderMapper.getOrderResponse(orderDetails);
     }
 
-    private void validateOrderCanBeModified(OrderDTO orderDto, Order orderToupdate) {
+    private void validateOrderCanBeModified(Long orderId, Order orderToupdate) {
         if (orderToupdate.getStatus() == OrderStatus.ORDER_CANCELLED) {
-            throw new CancelledOrderCannotBeModifiedException(orderDto.getOrderId());
+            throw new CancelledOrderCannotBeModifiedException(orderId);
         }
 
         if (orderToupdate.getStatus() == OrderStatus.PAYMENT_DONE
                 || orderToupdate.getStatus() == OrderStatus.PAYMENT_FAILED) {
-            throw new OrderCannotBeModifiedException(orderDto.getOrderId());
+            throw new OrderCannotBeModifiedException(orderId);
         }
     }
 
@@ -110,7 +112,11 @@ public class OrderService {
     }
 
     private Order getOrderById(Long orderId) {
-        final Order order = repo.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+        final Order order = repo
+                        .findById(orderId)
+                        .orElseThrow(
+                                () -> new OrderNotFoundException(
+                                        orderId));
         return order;
     }
 
@@ -128,9 +134,13 @@ public class OrderService {
         order.setUpdatedAt(now);
     }
 
-    public List<OrderDTO> getOrders(Long userId) {
-        List<Order> orders = repo.findByUserIdAndStatus(userId.toString(), OrderStatus.CREATED);
-        List<OrderDTO> userOrders = orders.stream().map(OrderDTO::getOrderDTO).toList();
+    public List<OrderResponse> getOrders(Long userId) {
+        List<Order> orders = repo
+                .findByUserIdAndStatus(
+                        userId.toString(), 
+                        OrderStatus.CREATED);
+        List<OrderResponse> userOrders = orders.stream()
+                .map(OrderMapper::getOrderResponse).toList();
         return userOrders;
     }
 }
