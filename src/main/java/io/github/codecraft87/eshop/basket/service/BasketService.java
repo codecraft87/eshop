@@ -7,33 +7,36 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+
 import io.github.codecraft87.eshop.basket.dto.BasketItemRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
 import io.github.codecraft87.eshop.basket.mapper.BasketMapper;
+import io.github.codecraft87.eshop.basket.publisher.BasketEventPublisher;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
 import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.service.CatalogModuleService;
 import io.github.codecraft87.eshop.common.enums.BasketStatus;
-import io.github.codecraft87.eshop.common.enums.OrderStatus;
 import io.github.codecraft87.eshop.exceptions.BasketNotFoundException;
+import io.github.codecraft87.eshop.messaging.event.BasketCheckedOutEvent;
+import io.github.codecraft87.eshop.messaging.event.BasketItemEvent;
 import io.github.codecraft87.eshop.notification.service.NotificationModuleService;
-import io.github.codecraft87.eshop.order.dto.OrderItemRequest;
-import io.github.codecraft87.eshop.order.dto.OrderRequest;
-import io.github.codecraft87.eshop.order.service.OrderModuleService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class BasketService implements BasketModuleService {
 
     private final BasketRepository basketRepository;
     private final CatalogModuleService catalogService;
-    private final OrderModuleService orderService;
     private final NotificationModuleService notificationService;
+    private final BasketEventPublisher eventPublisher;
 
     public Long saveBasket(BasketRequest basketRequest) {
         Basket activeBasket = getActiveBasketForUser(basketRequest);
@@ -57,7 +60,7 @@ public class BasketService implements BasketModuleService {
         if(basket!=null) {
             basketDetails = basket.getItems()
                                 .stream()
-                                .map(BasketMapper::getBasketItemResponse)
+                                .map(BasketMapper::toBasketItemResponse)
                                 .toList();
             
         }else {
@@ -68,20 +71,29 @@ public class BasketService implements BasketModuleService {
 
     @Transactional
     public void checkout(BasketRequest itemRequest) {
+        log.info("checkout basket.");
         Basket basket = getActiveBasketForUser(itemRequest);
         
         if (basket == null ||
                 basket.getItems().isEmpty()) {
             throw new IllegalStateException("Basket is empty");
         }
-        placeAnOrder(basket);
-        basket.getItems().clear();
-        basket.setStatus(BasketStatus.CHECKED_OUT);
+        basket.setStatus(BasketStatus.CHECKOUT_IN_PROGRESS);
         saveBasket(basket);
-        notificationService.basketCheckout(basket.getId());
+        BasketCheckedOutEvent basketCheckedOutEvent = getBasketCheckedOutEvent(basket);
+        eventPublisher.sendBasketCheckedOutEvent(basketCheckedOutEvent);
     }
 
-    private Basket getActiveBasketForUser(BasketRequest basketRequest) {
+    private BasketCheckedOutEvent getBasketCheckedOutEvent(Basket basket) {
+       return new BasketCheckedOutEvent(
+            basket.getId(),
+            basket.getUserId(),
+            basket.getItems()
+                .stream()
+                .map(this::gBasketItemEvent)
+                .toList());
+    }
+  private Basket getActiveBasketForUser(BasketRequest basketRequest) {
         Basket basket = basketRepository.findByUserIdAndStatus(
                         basketRequest.getUserId(), BasketStatus.ACTIVE);
         return basket;
@@ -170,32 +182,26 @@ public class BasketService implements BasketModuleService {
         basketRepository.save(basket);
     }
 
-    private void placeAnOrder(Basket basket) {
-       
-        OrderRequest orderRequest = new OrderRequest();
-        orderRequest.setStatus(OrderStatus.CREATED);
-        orderRequest.setUserId(basket.getUserId().toString());
-        orderRequest.setOrderItems(basket.getItems()
-                                    .stream()
-                                    .map(this::getOrderItemDTO)
-                                    .toList());
-        Double totalAmount = basket.getItems()
-                    .stream()
-                    .mapToDouble(
-                            item -> 
-                            item.getProduct().getPrice() 
-                                        * item.getQuantity())
-                    .sum();
-        orderRequest.setTotalAmount(totalAmount);
-        orderService.createOrder(orderRequest);
+    public BasketItemEvent gBasketItemEvent(BasketItem basketItem){
+        return new BasketItemEvent(
+                            basketItem.getProduct().getId(), 
+                            basketItem.getQuantity());
     }
 
-    private OrderItemRequest getOrderItemDTO(BasketItem basketItem) {
-        return OrderItemRequest.builder()
-                .productId(basketItem.getProduct().getId())
-                .productName(basketItem.getProduct().getName())
-                .price(basketItem.getProduct().getPrice())
-                .quantity(basketItem.getQuantity())
-                .build();
+    @Transactional
+    public void updateBasketForOrder(Long basketId) {
+        Basket basket = basketRepository
+                            .findById(basketId)
+                            .orElseThrow(
+                                    ()-> new BasketNotFoundException(
+                                                                basketId));
+        if(basket.getStatus()==BasketStatus.CHECKOUT_IN_PROGRESS){
+            basket.setStatus(BasketStatus.CHECKED_OUT);
+            basket.getItems().clear();
+            saveBasket(basket);
+            log.info("Basket checkout flow completed for async communication");
+        }else{
+                throw new IllegalStateException("On order ceated, Basket is invalid state "+basket.getStatus());
+        }
     }
 }

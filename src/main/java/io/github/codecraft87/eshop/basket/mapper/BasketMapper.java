@@ -4,19 +4,19 @@ import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
 
 public class BasketMapper {
-    public static BasketResponse getBasketItemResponse(
-        BasketItem basketItem) {
+    public static BasketResponse toBasketItemResponse(
+        BasketItem basket) {
         return BasketResponse.builder()
                 .productId(
-                        basketItem.getProduct().getId())
+                        basket.getProduct().getId())
                 .productName(
-                        basketItem.getProduct().getName())
+                        basket.getProduct().getName())
                 .description(
-                        basketItem.getProduct().getDescription())
+                        basket.getProduct().getDescription())
                 .price(
-                        basketItem.getProduct().getPrice())
+                        basket.getProduct().getPrice())
                 .quantity(
-                        basketItem.getQuantity())
+                        basket.getQuantity())
                 .build();
     }
 }

@@ -3,7 +3,6 @@ package io.github.codecraft87.eshop.payment.entity;
 import java.time.Instant;
 
 import io.github.codecraft87.eshop.common.enums.PaymentStatus;
-import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
