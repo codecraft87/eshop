@@ -1,6 +1,6 @@
 package io.github.codecraft87.eshop.payment.dto;
 
-import io.github.codecraft87.eshop.common.enums.PaymentStatus;
+import io.github.codecraft87.eshop.payment.enums.PaymentStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

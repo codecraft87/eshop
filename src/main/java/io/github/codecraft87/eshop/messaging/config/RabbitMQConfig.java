@@ -17,20 +17,35 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     @Bean
+    public TopicExchange getEShopExchange(){
+        return new TopicExchange(ExchangeConstants.ESHOP_EXCHANGE);
+    }
+    
+    @Bean
     public Queue getOrderBasketCheckoutQueue(){
         return new Queue(QueueConstants.ORDER_BASKET_CHECKOUT_QUEUE);
     }
 
     @Bean
-    public Queue getBasketOrderCreated(){
+    public Queue getBasketOrderCreatedQueue(){
         return new Queue(QueueConstants.BASKET_ORDER_CREATED_QUEUE);
     }
 
     @Bean
-    public TopicExchange getEShopExchange(){
-        return new TopicExchange(ExchangeConstants.ESHOP_EXCHANGE);
+    public Queue getOrderPaymentRequestedQueue() {
+        return new Queue(QueueConstants.PAYMENT_ORDER_PAYMENT_REQUESTED_QUEUE);
     }
-
+    
+    @Bean
+    public Queue getOrderPaymentCompletedQueue() {
+        return new Queue(QueueConstants.ORDER_PAYMENT_COMPLETED_QUEUE);
+    }
+    
+    @Bean
+    public Queue getOrderPaymentFailedQueue() {
+        return new Queue(QueueConstants.ORDER_PAYMENT_FAILED_QUEUE);
+    }
+    
     @Bean
     public Binding bindBasketOrderQueue(){
         return  BindingBuilder
@@ -42,11 +57,35 @@ public class RabbitMQConfig {
     @Bean
     public Binding bindOrderBasketQueue(){
         return BindingBuilder
-                .bind(getBasketOrderCreated())
+                .bind(getBasketOrderCreatedQueue())
                 .to(getEShopExchange())
                 .with(RoutingKeyConstants.ORDER_CREATED);
     }
 
+    @Bean
+    public Binding bindOrderPaymentRequestQueue(){
+        return BindingBuilder
+                .bind(getOrderPaymentRequestedQueue())
+                .to(getEShopExchange())
+                .with(RoutingKeyConstants.ORDER_PAYMENT_REQUESTED);
+    }
+    
+    @Bean
+    public Binding bindOrderPaymentCompletedQueue(){
+        return BindingBuilder
+                .bind(getOrderPaymentCompletedQueue())
+                .to(getEShopExchange())
+                .with(RoutingKeyConstants.PAYMENT_COMPLETED);
+    }
+    
+    @Bean
+    public Binding bindOrderPaymentFailedQueue(){
+        return BindingBuilder
+                .bind(getOrderPaymentFailedQueue())
+                .to(getEShopExchange())
+                .with(RoutingKeyConstants.PAYMENT_FAILED);
+    }
+    
     @Bean
     public MessageConverter jsonConverter(){
         return new JacksonJsonMessageConverter();

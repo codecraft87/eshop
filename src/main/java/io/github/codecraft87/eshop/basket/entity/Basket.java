@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import io.github.codecraft87.eshop.common.enums.BasketStatus;
+import io.github.codecraft87.eshop.basket.enums.BasketStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

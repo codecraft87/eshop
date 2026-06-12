@@ -11,7 +11,7 @@ import io.github.codecraft87.eshop.messaging.event.BasketItemEvent;
 import io.github.codecraft87.eshop.messaging.event.OrderCreatedEvent;
 import io.github.codecraft87.eshop.order.dto.OrderItemRequest;
 import io.github.codecraft87.eshop.order.dto.OrderRequest;
-import io.github.codecraft87.eshop.order.publisher.OrderEventPublisher;
+import io.github.codecraft87.eshop.order.publisher.OrderCreatedEventPublisher;
 import io.github.codecraft87.eshop.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +19,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderEventConsumer {
+public class OrderCreatedEventConsumer {
 
-    private final OrderEventPublisher orderEventPublisher;
+    private final OrderCreatedEventPublisher orderEventPublisher;
     private final CatalogModuleService productService;
     private final OrderService orderService;
 
     // where is exchange and routing id
     @RabbitListener(queues = QueueConstants.ORDER_BASKET_CHECKOUT_QUEUE)
-    public void rabbitMQListener(BasketCheckedOutEvent checkedOutEvent){
-        log.info("BasketCheckedOutEvent received for basket {}"+checkedOutEvent.basketId());
+    public void handleBasketCheckedOutEvent(BasketCheckedOutEvent checkedOutEvent){
+        log.info("Received BasketCheckedOutEvent for basket {}"+checkedOutEvent.basketId());
         OrderRequest request = new OrderRequest();
         request.setUserId(checkedOutEvent.userId().toString());
         request.setOrderItems(checkedOutEvent.items()
@@ -46,10 +46,9 @@ public class OrderEventConsumer {
         request.setTotalAmount(totalAmount);
         orderService.createOrder(request);
         log.info("Order created from publisher");
-        orderEventPublisher.sendOrderCreatedEvent(
+        orderEventPublisher.publishOrderCreatedEvent(
             new OrderCreatedEvent(checkedOutEvent.basketId(),
              checkedOutEvent.userId()));
-        log.info("Order created ");
     }
 
     private OrderItemRequest getOrderItemDTO(BasketItemEvent basketItem) {

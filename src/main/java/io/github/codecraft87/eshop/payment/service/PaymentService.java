@@ -1,64 +1,69 @@
 package io.github.codecraft87.eshop.payment.service;
 
 import java.time.Instant;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import io.github.codecraft87.eshop.common.enums.OrderLifecycleEvent;
-import io.github.codecraft87.eshop.common.enums.OrderStatus;
-import io.github.codecraft87.eshop.common.enums.PaymentStatus;
 import io.github.codecraft87.eshop.exceptions.DuplicatePaymentException;
-import io.github.codecraft87.eshop.exceptions.InvalidOrderStateForPaymentException;
-import io.github.codecraft87.eshop.exceptions.PaymentCannotBeCancelledException;
-import io.github.codecraft87.eshop.exceptions.PaymentCannotBeRetriedException;
 import io.github.codecraft87.eshop.exceptions.PaymentNotFoundException;
+import io.github.codecraft87.eshop.messaging.event.PaymentCompleteEvent;
+import io.github.codecraft87.eshop.messaging.event.PaymentFailedEvent;
 import io.github.codecraft87.eshop.notification.service.NotificationModuleService;
-import io.github.codecraft87.eshop.order.entity.Order;
-import io.github.codecraft87.eshop.order.service.OrderModuleService;
+import io.github.codecraft87.eshop.order.enums.OrderLifecycleEvent;
 import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
 import io.github.codecraft87.eshop.payment.dto.PaymentResponse;
 import io.github.codecraft87.eshop.payment.entity.Payment;
+import io.github.codecraft87.eshop.payment.enums.PaymentStatus;
 import io.github.codecraft87.eshop.payment.mapper.PaymentMapper;
+import io.github.codecraft87.eshop.payment.publisher.PaymentCompletedEventPublisher;
+import io.github.codecraft87.eshop.payment.publisher.PaymentFailedEventPublisher;
 import io.github.codecraft87.eshop.payment.repository.PaymentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class PaymentService implements PaymentModuleService {
 
     private final NotificationModuleService notificationService;
 
     private final PaymentRepository paymentRepo;
-
-    private final OrderModuleService orderService;
+   
+    private final PaymentCompletedEventPublisher paymentCompletePublisher;
     
-
+    private final PaymentFailedEventPublisher paymentFailedEventPublisher;
+    
     @Transactional
     public Long processPayment(PaymentRequest paymentRequest) {
-
-        validatePaymentRequest(paymentRequest.getOrderId());
+        log.info("Processing payment for order {}", paymentRequest);
+//        validatePaymentRequest(paymentRequest.getOrderId());
 
         final Payment paymentToBeProcesed = PaymentMapper.getPaymentEntity(paymentRequest);
 
         if (paymentRequest.isSimulateFailure()) {
+            log.info("Payment failure case");
+            markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderLifecycleEvent.PENDING_PAYMENT);
 
-            markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderLifecycleEvent.CREATE);
-
-            Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderStatus.PAYMENT_FAILED);
+            Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED);
             
+            paymentFailedEventPublisher.publishPaymentFailedEvent(
+                        new PaymentFailedEvent(
+                                paymentRequest.getOrderId()));
             notificationService.paymentFailed(paymentId);
 
             return paymentId;
         } else {
-
+            log.info("else block");
             checkForDuplicatePayment(paymentRequest.getOrderId());
 
-            markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.CREATE);
+            markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.PENDING_PAYMENT);
 
-            Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderStatus.PAYMENT_DONE);
+            Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE);
 
+            paymentCompletePublisher.publishPaymentRequestedEvent(
+                    new PaymentCompleteEvent(paymentRequest.getOrderId()));
             notificationService.paymentSucceeded(paymentId);
 
             return paymentId;
@@ -67,39 +72,20 @@ public class PaymentService implements PaymentModuleService {
 
     @Transactional
     public Long retryPayment(long paymentId) {
-
+        log.info("Retry payment {} ",paymentId);
         final Payment paymentToBeRetry = getPaymentById(paymentId);
 
-        validateRePaymentRequest(paymentToBeRetry.getOrderId());
+//        validateRePaymentRequest(paymentToBeRetry.getOrderId());
 
         checkForDuplicatePayment(paymentToBeRetry.getOrderId());
 
         markPaymentStatus(paymentToBeRetry, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.UPDATE);
-        completePayment(paymentToBeRetry, PaymentStatus.PAYMENT_DONE, OrderStatus.PAYMENT_DONE);
-
+        completePayment(paymentToBeRetry, PaymentStatus.PAYMENT_DONE);
+        paymentCompletePublisher.publishPaymentRequestedEvent(
+                new PaymentCompleteEvent(paymentToBeRetry.getOrderId()));
         notificationService.paymentSucceeded(paymentId);
 
         return paymentId;
-    }
-
-    @Transactional
-    public void handleOrderCancellation(Long orderId) {
-        final List<Payment> payments = getPaymentListForOrder(orderId);
-
-        final boolean hasInvalidStatus = payments.stream().anyMatch(
-                p -> p.getStatus() == PaymentStatus.PAYMENT_DONE 
-                || p.getStatus() == PaymentStatus.PAYMENT_CANCELLED);
-
-        if (hasInvalidStatus) {
-            throw new PaymentCannotBeCancelledException(orderId);
-        }
-
-        payments.stream()
-                .forEach(
-                        p -> p.setStatus(PaymentStatus.PAYMENT_CANCELLED));
-        paymentRepo.saveAll(payments);
-        notificationService.paymentCancelled(orderId);
-
     }
 
     public PaymentResponse getPaymentDetails(Long paymentId) {
@@ -107,11 +93,6 @@ public class PaymentService implements PaymentModuleService {
                 paymentRepo.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
         return PaymentMapper.getPaymentResponse(payment);
-    }
-
-    private List<Payment> getPaymentListForOrder(Long orderId) {
-        final List<Payment> payments = paymentRepo.findByOrderId(orderId);
-        return payments;
     }
 
     private Payment getPaymentById(long paymentId) {
@@ -128,11 +109,12 @@ public class PaymentService implements PaymentModuleService {
         }
     }
 
-    private Long completePayment(Payment paymentToBeProcesed, PaymentStatus paymentStatus, OrderStatus orderStatus) {
+    private Long completePayment(Payment paymentToBeProcesed, 
+                                 PaymentStatus paymentStatus) {
 
         final Payment payment = savePayment(paymentToBeProcesed);
 
-        updateOrderStatus(payment.getOrderId(), orderStatus);
+       // updateOrderStatus(payment.getOrderId(), orderStatus);
         return payment.getId();
     }
     
@@ -143,33 +125,35 @@ public class PaymentService implements PaymentModuleService {
         
     }
 
-    private void markPaymentStatus(Payment paymentToBeProcesed, PaymentStatus paymentStatus,
-        OrderLifecycleEvent isCreateOperation) {
+    private void markPaymentStatus(Payment paymentToBeProcesed, 
+                                        PaymentStatus paymentStatus,
+                                        OrderLifecycleEvent isCreateOperation) {
         final Instant now = Instant.now();
         paymentToBeProcesed.setStatus(paymentStatus);
-        if (isCreateOperation == OrderLifecycleEvent.CREATE) {
+        if (isCreateOperation == OrderLifecycleEvent.PENDING_PAYMENT) {
             paymentToBeProcesed.setCreatedAt(now);
         }
         paymentToBeProcesed.setUpdatedAt(now);
     }
 
-    private void validatePaymentRequest(Long orderId) {
-        final Order order = orderService.getOrder(orderId);
-        if (order.getStatus() != OrderStatus.CREATED) {
-            throw new InvalidOrderStateForPaymentException(order.getId());
-        }
-    }
+//    private void validatePaymentRequest(Long orderId) {
+//        final Order order = orderService.getOrder(orderId);
+//        log.info("order status {} ",order.getStatus());
+//        if (order.getStatus() != OrderStatus.PAYMENT_PENDING) {
+//            throw new InvalidOrderStateForPaymentException(order.getId());
+//        }
+//    }
+//
+//    private void validateRePaymentRequest(Long orderId) {
+//        final Order order = orderService.getOrder(orderId);
+//        if (order.getStatus() != OrderStatus.PAYMENT_FAILED) {
+//            throw new PaymentCannotBeRetriedException(orderId);
+//        }
+//    }
 
-    private void validateRePaymentRequest(Long orderId) {
-        final Order order = orderService.getOrder(orderId);
-        if (order.getStatus() != OrderStatus.PAYMENT_FAILED) {
-            throw new PaymentCannotBeRetriedException(orderId);
-        }
-    }
-
-    private void updateOrderStatus(Long orderId, OrderStatus status) {
-        final Order order = orderService.getOrder(orderId);
-        order.setStatus(status);
-        orderService.saveOrder(order);
-    }
+    /*
+     * private void updateOrderStatus(Long orderId, OrderStatus status) { final
+     * Order order = orderService.getOrder(orderId); order.setStatus(status);
+     * orderService.saveOrder(order); }
+     */
 }

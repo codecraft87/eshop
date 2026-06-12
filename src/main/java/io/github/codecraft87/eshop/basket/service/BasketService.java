@@ -13,12 +13,12 @@ import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
+import io.github.codecraft87.eshop.basket.enums.BasketStatus;
 import io.github.codecraft87.eshop.basket.mapper.BasketMapper;
 import io.github.codecraft87.eshop.basket.publisher.BasketEventPublisher;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
 import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.service.CatalogModuleService;
-import io.github.codecraft87.eshop.common.enums.BasketStatus;
 import io.github.codecraft87.eshop.exceptions.BasketNotFoundException;
 import io.github.codecraft87.eshop.messaging.event.BasketCheckedOutEvent;
 import io.github.codecraft87.eshop.messaging.event.BasketItemEvent;
@@ -81,7 +81,7 @@ public class BasketService implements BasketModuleService {
         basket.setStatus(BasketStatus.CHECKOUT_IN_PROGRESS);
         saveBasket(basket);
         BasketCheckedOutEvent basketCheckedOutEvent = getBasketCheckedOutEvent(basket);
-        eventPublisher.sendBasketCheckedOutEvent(basketCheckedOutEvent);
+        eventPublisher.publishBasketCheckedOutEvent(basketCheckedOutEvent);
     }
 
     private BasketCheckedOutEvent getBasketCheckedOutEvent(Basket basket) {

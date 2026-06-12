@@ -10,16 +10,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.codecraft87.eshop.common.dto.OperationResponse;
 import io.github.codecraft87.eshop.order.dto.OrderRequest;
 import io.github.codecraft87.eshop.order.dto.OrderResponse;
+import io.github.codecraft87.eshop.order.dto.ProcessOrderInput;
 import io.github.codecraft87.eshop.order.service.OrderService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/orders")
+@Slf4j
 public class OrderController {
 
     private final OrderService orderService;
@@ -78,7 +82,16 @@ public class OrderController {
                     @RequestBody OrderRequest orderDto) {
         OrderRequest updatedOrder = orderService
                 .updateOrder(orderId, orderDto);
-        System.out.println(updatedOrder);
         return ResponseEntity.ok().body(updatedOrder);
+    }
+    
+    @PostMapping("/{orderId}/process")
+    public ResponseEntity<String> processOrder(
+        @PathVariable("orderId") Long orderId,
+        @RequestParam(defaultValue = "false") Boolean simulateSuccess){
+        log.info("Processing order "+orderId);
+        orderService.processOrder(new ProcessOrderInput(orderId, simulateSuccess));
+        return ResponseEntity
+                .ok("Order procssed");
     }
 }

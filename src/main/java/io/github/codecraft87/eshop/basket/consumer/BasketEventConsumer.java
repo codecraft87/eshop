@@ -17,7 +17,7 @@ public class BasketEventConsumer {
     private final BasketService basketService;
 
     @RabbitListener(queues = QueueConstants.BASKET_ORDER_CREATED_QUEUE)
-    public void orderCeated(OrderCreatedEvent createdEvent){
+    public void handleOrderCreatedEvent(OrderCreatedEvent createdEvent){
         log.info("Received OrderCreatedEvent for basket {}", createdEvent.basketId());
         basketService.updateBasketForOrder(createdEvent.basketId());
         log.info("Basket updated for status");

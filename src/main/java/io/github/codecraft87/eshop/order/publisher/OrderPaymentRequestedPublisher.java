@@ -5,22 +5,23 @@ import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.messaging.config.ExchangeConstants;
 import io.github.codecraft87.eshop.messaging.config.RoutingKeyConstants;
-import io.github.codecraft87.eshop.messaging.event.OrderCreatedEvent;
+import io.github.codecraft87.eshop.messaging.event.OrderPaymentRequestEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class OrderEventPublisher {
+public class OrderPaymentRequestedPublisher {
 
     private final RabbitTemplate rabbitTemplate;
- 
-    public void sendOrderCreatedEvent(OrderCreatedEvent createdEvent){
-        log.info("Publishing order created event for basket {} ",createdEvent.basketId());
+    
+    public void publishOrderPaymentRequestedEvent(
+                        OrderPaymentRequestEvent event) {
+        log.info("Publishing order payment requested event {} ", event);
         rabbitTemplate.convertAndSend(
-            ExchangeConstants.ESHOP_EXCHANGE,
-            RoutingKeyConstants.ORDER_CREATED,
-            createdEvent);
+                ExchangeConstants.ESHOP_EXCHANGE,
+                RoutingKeyConstants.ORDER_PAYMENT_REQUESTED,
+                event);
     }
 }

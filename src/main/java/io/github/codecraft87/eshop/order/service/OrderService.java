@@ -5,28 +5,36 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import io.github.codecraft87.eshop.common.enums.OrderLifecycleEvent;
-import io.github.codecraft87.eshop.common.enums.OrderStatus;
 import io.github.codecraft87.eshop.exceptions.CancelledOrderCannotBeModifiedException;
+import io.github.codecraft87.eshop.exceptions.InvalidOrderStateForPaymentException;
 import io.github.codecraft87.eshop.exceptions.OrderAlreadyCancelledException;
 import io.github.codecraft87.eshop.exceptions.OrderCannotBeModifiedException;
 import io.github.codecraft87.eshop.exceptions.OrderNotFoundException;
+import io.github.codecraft87.eshop.messaging.event.OrderPaymentRequestEvent;
 import io.github.codecraft87.eshop.notification.service.NotificationService;
 import io.github.codecraft87.eshop.order.dto.OrderRequest;
 import io.github.codecraft87.eshop.order.dto.OrderResponse;
+import io.github.codecraft87.eshop.order.dto.ProcessOrderInput;
 import io.github.codecraft87.eshop.order.entity.Order;
+import io.github.codecraft87.eshop.order.enums.OrderLifecycleEvent;
+import io.github.codecraft87.eshop.order.enums.OrderStatus;
 import io.github.codecraft87.eshop.order.mapper.OrderMapper;
+import io.github.codecraft87.eshop.order.publisher.OrderPaymentRequestedPublisher;
 import io.github.codecraft87.eshop.order.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class OrderService implements OrderModuleService {
 
     private final NotificationService notificationService;
 
     private final OrderRepository orderRepository;
+    
+    private final OrderPaymentRequestedPublisher publisher;
 
     @Transactional
     public Long createOrder(OrderRequest orderRequest) {
@@ -47,8 +55,6 @@ public class OrderService implements OrderModuleService {
         final Order orderToCancel = getOrderById(orderId);
 
         validateIfOrderEligibleForCancellation(orderId, orderToCancel);
-
-//        paymentService.handleOrderCancellation(orderId);
 
         markOrderStatus(orderToCancel, OrderStatus.ORDER_CANCELLED, OrderLifecycleEvent.UPDATE);
 
@@ -135,5 +141,42 @@ public class OrderService implements OrderModuleService {
         List<OrderResponse> userOrders = orders.stream()
                 .map(OrderMapper::getOrderResponse).toList();
         return userOrders;
+    }
+
+    @Transactional
+    public void processOrder(ProcessOrderInput orderInput) {
+       log.info("Processing order {} ", orderInput);
+       Order order = getOrderById(orderInput.orderId());
+       if(order.getStatus()==OrderStatus.CREATED) {
+           order.setStatus(OrderStatus.PAYMENT_PENDING);
+           saveOrder(order);
+           publisher.publishOrderPaymentRequestedEvent(
+                       new OrderPaymentRequestEvent(orderInput.orderId(), 
+                                               orderInput.simulateSuccess()));
+       }
+    }
+
+    @Transactional
+    public void updateOrderForPayment(Long orderId) {
+        log.info("Updating order for successful payment");
+        Order order = getOrderById(orderId);
+        if(order.getStatus()==OrderStatus.PAYMENT_FAILED) {
+            order.setStatus(OrderStatus.PAYMENT_DONE);
+            saveOrder(order);
+        }else {
+            throw new InvalidOrderStateForPaymentException(orderId);
+        }
+    }
+
+    @Transactional
+    public void markOrderAsFailed(Long orderId) {
+        log.info("Mark order as payment failed");
+        Order order = getOrderById(orderId);
+        if(order.getStatus()==OrderStatus.PAYMENT_PENDING) {
+            order.setStatus(OrderStatus.PAYMENT_FAILED);
+            saveOrder(order);
+        }else {
+            throw new InvalidOrderStateForPaymentException(orderId);
+        }
     }
 }
