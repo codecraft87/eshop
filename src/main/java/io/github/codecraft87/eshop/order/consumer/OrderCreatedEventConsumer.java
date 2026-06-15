@@ -15,6 +15,7 @@ import io.github.codecraft87.eshop.order.publisher.OrderCreatedEventPublisher;
 import io.github.codecraft87.eshop.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
@@ -24,11 +25,19 @@ public class OrderCreatedEventConsumer {
     private final OrderCreatedEventPublisher orderEventPublisher;
     private final CatalogModuleService productService;
     private final OrderService orderService;
+    private final ObjectMapper objectMapper;
 
     // where is exchange and routing id
     @RabbitListener(queues = QueueConstants.ORDER_BASKET_CHECKOUT_QUEUE)
-    public void handleBasketCheckedOutEvent(BasketCheckedOutEvent checkedOutEvent){
+    public void handleBasketCheckedOutEvent( String payload){
+        
+        BasketCheckedOutEvent checkedOutEvent =
+                objectMapper.readValue(
+                        payload,
+                        BasketCheckedOutEvent.class);
+        if(null!=checkedOutEvent) {
         log.info("Received BasketCheckedOutEvent for basket {}"+checkedOutEvent.basketId());
+        
         OrderRequest request = new OrderRequest();
         request.setUserId(checkedOutEvent.userId().toString());
         request.setOrderItems(checkedOutEvent.items()
@@ -49,6 +58,9 @@ public class OrderCreatedEventConsumer {
         orderEventPublisher.publishOrderCreatedEvent(
             new OrderCreatedEvent(checkedOutEvent.basketId(),
              checkedOutEvent.userId()));
+        }else {
+            log.info("Event is null");
+        }
     }
 
     private OrderItemRequest getOrderItemDTO(BasketItemEvent basketItem) {

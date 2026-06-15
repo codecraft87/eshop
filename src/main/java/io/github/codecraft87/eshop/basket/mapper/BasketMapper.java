@@ -5,7 +5,7 @@ import io.github.codecraft87.eshop.basket.entity.BasketItem;
 
 public class BasketMapper {
     public static BasketResponse toBasketItemResponse(
-        BasketItem basket) {
+            BasketItem basket) {
         return BasketResponse.builder()
                 .productId(
                         basket.getProduct().getId())

@@ -4,18 +4,20 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-
 
 import io.github.codecraft87.eshop.basket.dto.BasketItemRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
+import io.github.codecraft87.eshop.basket.entity.BasketOutboxEvent;
+import io.github.codecraft87.eshop.basket.enums.BasketEventStatus;
+import io.github.codecraft87.eshop.basket.enums.BasketEventType;
 import io.github.codecraft87.eshop.basket.enums.BasketStatus;
 import io.github.codecraft87.eshop.basket.mapper.BasketMapper;
-import io.github.codecraft87.eshop.basket.publisher.BasketEventPublisher;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
 import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.service.CatalogModuleService;
@@ -26,6 +28,8 @@ import io.github.codecraft87.eshop.notification.service.NotificationModuleServic
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 
 @RequiredArgsConstructor
@@ -36,7 +40,8 @@ public class BasketService implements BasketModuleService {
     private final BasketRepository basketRepository;
     private final CatalogModuleService catalogService;
     private final NotificationModuleService notificationService;
-    private final BasketEventPublisher eventPublisher;
+    private final BasketOutboxEventService outboxEventService;
+    private final ObjectMapper objectMapper;
 
     public Long saveBasket(BasketRequest basketRequest) {
         Basket activeBasket = getActiveBasketForUser(basketRequest);
@@ -71,7 +76,7 @@ public class BasketService implements BasketModuleService {
 
     @Transactional
     public void checkout(BasketRequest itemRequest) {
-        log.info("checkout basket.");
+        log.info("checkout basket v1.");
         Basket basket = getActiveBasketForUser(itemRequest);
         
         if (basket == null ||
@@ -80,12 +85,45 @@ public class BasketService implements BasketModuleService {
         }
         basket.setStatus(BasketStatus.CHECKOUT_IN_PROGRESS);
         saveBasket(basket);
-        BasketCheckedOutEvent basketCheckedOutEvent = getBasketCheckedOutEvent(basket);
-        eventPublisher.publishBasketCheckedOutEvent(basketCheckedOutEvent);
+        BasketOutboxEvent basketOutboxEventEntity = buildBasketCheckedOutOutboxEvent(basket);
+        outboxEventService.saveBasketOutboxEvent(basketOutboxEventEntity);
+  }
+
+    private BasketOutboxEvent buildBasketCheckedOutOutboxEvent(Basket basket) {
+        log.info("Build basket checkout event entity");
+        BasketOutboxEvent entity = new BasketOutboxEvent();
+        entity.setEventId(UUID.randomUUID());
+        entity.setEventType(BasketEventType.BASKET_CHECKED_OUT);
+        entity.setStatus(BasketEventStatus.NEW);
+        entity.setRetryCount(0);
+        entity.setCreatedAt(Instant.now());
+        BasketCheckedOutEvent checkedOutEvent = 
+                getBasketCheckedOutEvent(
+                                        basket,
+                                        entity);
+        try {
+            entity.setPayload(objectMapper
+                            .writeValueAsString(
+                                    checkedOutEvent));
+        }catch (JacksonException ex) {
+            log.error(
+                    "Failed to serialize BasketCheckedOutEvent",
+                    ex);
+
+            
+            throw new RuntimeException(
+                    "Failed to serialize BasketCheckedOutEvent",
+                    ex);
+        }
+        return entity;
     }
 
-    private BasketCheckedOutEvent getBasketCheckedOutEvent(Basket basket) {
+    private BasketCheckedOutEvent getBasketCheckedOutEvent(
+                                        Basket basket,
+                                        BasketOutboxEvent outboxEvent) {
+        log.info("return json payload ");
        return new BasketCheckedOutEvent(
+            outboxEvent.getEventId().toString(),
             basket.getId(),
             basket.getUserId(),
             basket.getItems()
@@ -93,7 +131,8 @@ public class BasketService implements BasketModuleService {
                 .map(this::gBasketItemEvent)
                 .toList());
     }
-  private Basket getActiveBasketForUser(BasketRequest basketRequest) {
+  
+    private Basket getActiveBasketForUser(BasketRequest basketRequest) {
         Basket basket = basketRepository.findByUserIdAndStatus(
                         basketRequest.getUserId(), BasketStatus.ACTIVE);
         return basket;
