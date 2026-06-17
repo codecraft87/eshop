@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.exceptions.DuplicatePaymentException;
 import io.github.codecraft87.eshop.exceptions.PaymentNotFoundException;
-import io.github.codecraft87.eshop.messaging.event.PaymentCompleteEvent;
-import io.github.codecraft87.eshop.messaging.event.PaymentFailedEvent;
 import io.github.codecraft87.eshop.notification.service.NotificationModuleService;
 import io.github.codecraft87.eshop.order.enums.OrderLifecycleEvent;
 import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
@@ -15,8 +13,7 @@ import io.github.codecraft87.eshop.payment.dto.PaymentResponse;
 import io.github.codecraft87.eshop.payment.entity.Payment;
 import io.github.codecraft87.eshop.payment.enums.PaymentStatus;
 import io.github.codecraft87.eshop.payment.mapper.PaymentMapper;
-import io.github.codecraft87.eshop.payment.publisher.PaymentCompletedEventPublisher;
-import io.github.codecraft87.eshop.payment.publisher.PaymentFailedEventPublisher;
+import io.github.codecraft87.eshop.payment.outbox.PaymentOutboxService;
 import io.github.codecraft87.eshop.payment.repository.PaymentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +28,8 @@ public class PaymentService implements PaymentModuleService {
 
     private final PaymentRepository paymentRepo;
    
-    private final PaymentCompletedEventPublisher paymentCompletePublisher;
-    
-    private final PaymentFailedEventPublisher paymentFailedEventPublisher;
-    
+    private final PaymentOutboxService outboxService;
+
     @Transactional
     public Long processPayment(PaymentRequest paymentRequest) {
         log.info("Processing payment for order {}", paymentRequest);
@@ -48,9 +43,8 @@ public class PaymentService implements PaymentModuleService {
 
             Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED);
             
-            paymentFailedEventPublisher.publishPaymentFailedEvent(
-                        new PaymentFailedEvent(
-                                paymentRequest.getOrderId()));
+            outboxService.savePaymentFailededEvent(paymentRequest.getOrderId());
+            
             notificationService.paymentFailed(paymentId);
 
             return paymentId;
@@ -62,8 +56,7 @@ public class PaymentService implements PaymentModuleService {
 
             Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE);
 
-            paymentCompletePublisher.publishPaymentRequestedEvent(
-                    new PaymentCompleteEvent(paymentRequest.getOrderId()));
+            outboxService.savePaymentCompletedEvent(paymentRequest.getOrderId());
             notificationService.paymentSucceeded(paymentId);
 
             return paymentId;
@@ -81,8 +74,7 @@ public class PaymentService implements PaymentModuleService {
 
         markPaymentStatus(paymentToBeRetry, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.UPDATE);
         completePayment(paymentToBeRetry, PaymentStatus.PAYMENT_DONE);
-        paymentCompletePublisher.publishPaymentRequestedEvent(
-                new PaymentCompleteEvent(paymentToBeRetry.getOrderId()));
+        outboxService.savePaymentCompletedEvent(paymentToBeRetry.getOrderId());
         notificationService.paymentSucceeded(paymentId);
 
         return paymentId;

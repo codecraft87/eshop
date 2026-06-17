@@ -10,7 +10,6 @@ import io.github.codecraft87.eshop.exceptions.InvalidOrderStateForPaymentExcepti
 import io.github.codecraft87.eshop.exceptions.OrderAlreadyCancelledException;
 import io.github.codecraft87.eshop.exceptions.OrderCannotBeModifiedException;
 import io.github.codecraft87.eshop.exceptions.OrderNotFoundException;
-import io.github.codecraft87.eshop.messaging.event.OrderPaymentRequestEvent;
 import io.github.codecraft87.eshop.notification.service.NotificationService;
 import io.github.codecraft87.eshop.order.dto.OrderRequest;
 import io.github.codecraft87.eshop.order.dto.OrderResponse;
@@ -18,8 +17,9 @@ import io.github.codecraft87.eshop.order.dto.ProcessOrderInput;
 import io.github.codecraft87.eshop.order.entity.Order;
 import io.github.codecraft87.eshop.order.enums.OrderLifecycleEvent;
 import io.github.codecraft87.eshop.order.enums.OrderStatus;
+import io.github.codecraft87.eshop.order.event.PaymentRequested;
 import io.github.codecraft87.eshop.order.mapper.OrderMapper;
-import io.github.codecraft87.eshop.order.publisher.OrderPaymentRequestedPublisher;
+import io.github.codecraft87.eshop.order.outbox.OrderOutboxService;
 import io.github.codecraft87.eshop.order.repository.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class OrderService implements OrderModuleService {
 
     private final OrderRepository orderRepository;
     
-    private final OrderPaymentRequestedPublisher publisher;
+    private final OrderOutboxService outboxService;
 
     @Transactional
     public Long createOrder(OrderRequest orderRequest) {
@@ -148,11 +148,15 @@ public class OrderService implements OrderModuleService {
        log.info("Processing order {} ", orderInput);
        Order order = getOrderById(orderInput.orderId());
        if(order.getStatus()==OrderStatus.CREATED) {
+           
            order.setStatus(OrderStatus.PAYMENT_PENDING);
            saveOrder(order);
-           publisher.publishOrderPaymentRequestedEvent(
-                       new OrderPaymentRequestEvent(orderInput.orderId(), 
-                                               orderInput.simulateSuccess()));
+           
+           outboxService.savePaymentRequestEvent(
+                               new PaymentRequested(
+                                      orderInput.orderId(), 
+                                      orderInput.simulateSuccess(),
+                                      null));
        }
     }
 
@@ -161,6 +165,7 @@ public class OrderService implements OrderModuleService {
         log.info("Updating order for successful payment");
         Order order = getOrderById(orderId);
         if(order.getStatus()==OrderStatus.PAYMENT_FAILED) {
+            
             order.setStatus(OrderStatus.PAYMENT_DONE);
             saveOrder(order);
         }else {

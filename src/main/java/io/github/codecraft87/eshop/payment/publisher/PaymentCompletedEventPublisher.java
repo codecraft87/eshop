@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.messaging.config.ExchangeConstants;
 import io.github.codecraft87.eshop.messaging.config.RoutingKeyConstants;
-import io.github.codecraft87.eshop.messaging.event.PaymentCompleteEvent;
+import io.github.codecraft87.eshop.messaging.event.PaymentCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,7 +16,7 @@ public class PaymentCompletedEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
     
-    public void publishPaymentRequestedEvent(PaymentCompleteEvent event) {
+    public void publishPaymentRequestedEvent(PaymentCompletedEvent event) {
         log.info("Publishing payment request event");
         rabbitTemplate.convertAndSend(ExchangeConstants.ESHOP_EXCHANGE, 
                                         RoutingKeyConstants.PAYMENT_COMPLETED, 

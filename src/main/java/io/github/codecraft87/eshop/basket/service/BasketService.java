@@ -13,17 +13,18 @@ import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
-import io.github.codecraft87.eshop.basket.entity.BasketOutboxEvent;
-import io.github.codecraft87.eshop.basket.enums.BasketEventStatus;
-import io.github.codecraft87.eshop.basket.enums.BasketEventType;
 import io.github.codecraft87.eshop.basket.enums.BasketStatus;
+import io.github.codecraft87.eshop.basket.event.BasketCheckedOutEvent;
+import io.github.codecraft87.eshop.basket.event.BasketItemEvent;
 import io.github.codecraft87.eshop.basket.mapper.BasketMapper;
+import io.github.codecraft87.eshop.basket.outbox.BasketOutboxMessage;
+import io.github.codecraft87.eshop.basket.outbox.BasketOutboxService;
+import io.github.codecraft87.eshop.basket.outbox.OutboxEventStatus;
+import io.github.codecraft87.eshop.basket.outbox.OutboxEventType;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
 import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.service.CatalogModuleService;
 import io.github.codecraft87.eshop.exceptions.BasketNotFoundException;
-import io.github.codecraft87.eshop.messaging.event.BasketCheckedOutEvent;
-import io.github.codecraft87.eshop.messaging.event.BasketItemEvent;
 import io.github.codecraft87.eshop.notification.service.NotificationModuleService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class BasketService implements BasketModuleService {
     private final BasketRepository basketRepository;
     private final CatalogModuleService catalogService;
     private final NotificationModuleService notificationService;
-    private final BasketOutboxEventService outboxEventService;
+    private final BasketOutboxService outboxService;
     private final ObjectMapper objectMapper;
 
     public Long saveBasket(BasketRequest basketRequest) {
@@ -85,16 +86,16 @@ public class BasketService implements BasketModuleService {
         }
         basket.setStatus(BasketStatus.CHECKOUT_IN_PROGRESS);
         saveBasket(basket);
-        BasketOutboxEvent basketOutboxEventEntity = buildBasketCheckedOutOutboxEvent(basket);
-        outboxEventService.saveBasketOutboxEvent(basketOutboxEventEntity);
+        BasketOutboxMessage basketOutboxEventEntity = buildBasketCheckedOutOutboxEvent(basket);
+        outboxService.saveBasketOutboxEvent(basketOutboxEventEntity);
   }
 
-    private BasketOutboxEvent buildBasketCheckedOutOutboxEvent(Basket basket) {
+    private BasketOutboxMessage buildBasketCheckedOutOutboxEvent(Basket basket) {
         log.info("Build basket checkout event entity");
-        BasketOutboxEvent entity = new BasketOutboxEvent();
+        BasketOutboxMessage entity = new BasketOutboxMessage();
         entity.setEventId(UUID.randomUUID());
-        entity.setEventType(BasketEventType.BASKET_CHECKED_OUT);
-        entity.setStatus(BasketEventStatus.NEW);
+        entity.setEventType(OutboxEventType.BASKET_CHECKED_OUT);
+        entity.setStatus(OutboxEventStatus.NEW);
         entity.setRetryCount(0);
         entity.setCreatedAt(Instant.now());
         BasketCheckedOutEvent checkedOutEvent = 
@@ -120,7 +121,7 @@ public class BasketService implements BasketModuleService {
 
     private BasketCheckedOutEvent getBasketCheckedOutEvent(
                                         Basket basket,
-                                        BasketOutboxEvent outboxEvent) {
+                                        BasketOutboxMessage outboxEvent) {
         log.info("return json payload ");
        return new BasketCheckedOutEvent(
             outboxEvent.getEventId().toString(),
