@@ -1,13 +1,17 @@
 package io.github.codecraft87.eshop.payment.event;
 
+import java.util.UUID;
+
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
+import io.github.codecraft87.eshop.basket.idempotency.ProcessedEventService;
 import io.github.codecraft87.eshop.messaging.config.QueueConstants;
 import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
 import io.github.codecraft87.eshop.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.ObjectMapper;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -16,12 +20,28 @@ public class PaymentRequestedEventConsumer {
 
     private final PaymentService paymentService;
     
+    private final ObjectMapper objectMapper;
+    
+    private final ProcessedEventService processedEventService;
+    
     @RabbitListener(queues = QueueConstants.PAYMENT_ORDER_PAYMENT_REQUESTED_QUEUE)
-    public void handlePaymentRequested(OrderPaymentRequestEvent event) {
-      log.info("Received Order payment requested {} ",event);
-      PaymentRequest request = new PaymentRequest();
-      request.setOrderId(event.orderId());
-      request.setSimulateFailure(event.simulateSuccess());
-      paymentService.processPayment(request);
+    public void handlePaymentRequested(String payload) {
+      log.info("Received Order payment requested ");
+      PaymentRequested paymentRequested = objectMapper.readValue(
+              payload, PaymentRequested.class);
+      log.info("payload {} "+paymentRequested);
+      
+      if(paymentRequested!=null) {
+          UUID eventId = UUID.fromString(paymentRequested.eventId());
+          if(processedEventService.checkIfEventIsProcessed(eventId)) {
+              log.info("Duplicate event {} ignored ", 
+                      eventId);
+              return;
+          }
+          PaymentRequest request = new PaymentRequest();
+          request.setOrderId(paymentRequested.orderId());
+          request.setSimulateFailure(paymentRequested.simulate());
+          paymentService.processPayment(request);
+      }
     }
 }

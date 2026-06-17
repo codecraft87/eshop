@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.messaging.config.ExchangeConstants;
 import io.github.codecraft87.eshop.messaging.config.RoutingKeyConstants;
-import io.github.codecraft87.eshop.messaging.event.PaymentCompletedEvent;
+import io.github.codecraft87.eshop.payment.event.PaymentAckowledge;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.JacksonException;
@@ -45,7 +45,7 @@ public class PaymentOutboxService {
             outboxMessage.setPayload(
                     objectMapper
                         .writeValueAsString(
-                                   new PaymentCompletedEvent(
+                                   new PaymentAckowledge(
                                            orderId, 
                                            outboxMessage.getEventId().toString())));
             
@@ -81,7 +81,7 @@ public class PaymentOutboxService {
             outboxMessage.setPayload(
                     objectMapper
                         .writeValueAsString(
-                                   new PaymentCompletedEvent(
+                                   new PaymentAckowledge(
                                            orderId, 
                                            outboxMessage.getEventId().toString())));
             
@@ -139,6 +139,5 @@ public class PaymentOutboxService {
                 ExchangeConstants.ESHOP_EXCHANGE,
                 RoutingKeyConstants.PAYMENT_COMPLETED,
                 payload);
-        
     }
 }

@@ -53,7 +53,8 @@ public class OrderOutboxService {
             try {
                 outboxMessage.setPayload(
                         objectMapper.writeValueAsString(
-                                new PaymentRequested(paymentRequest.orderId(),
+                                new PaymentRequested(
+                                        paymentRequest.orderId(),
                                         paymentRequest.simulate(),
                                         outboxMessage.getEventId().toString())));
             }catch (JacksonException ex) {
@@ -97,7 +98,10 @@ public class OrderOutboxService {
     public void publishPendingEvents() {
         log.info("Publishing pending events ");
         List<OrderOutboxMessage> events = outboxRepository
-                .findByStatusInOrderByCreatedAt(List.of(OrderEventStatus.NEW, OrderEventStatus.FAILED));
+                .findByStatusInOrderByCreatedAt(
+                        List.of(
+                                OrderEventStatus.NEW, 
+                                OrderEventStatus.FAILED));
         log.info("Found pending events to publish {} ", events.size());
 
         for (OrderOutboxMessage event : events) {
