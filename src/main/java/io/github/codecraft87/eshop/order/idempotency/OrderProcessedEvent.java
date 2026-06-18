@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "processed_event", schema = "ordering")
-public class ProcessedEvent {
+public class OrderProcessedEvent {
 
     @Id
     private UUID eventId;

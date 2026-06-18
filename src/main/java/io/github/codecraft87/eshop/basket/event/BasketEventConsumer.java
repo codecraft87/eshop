@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
-import io.github.codecraft87.eshop.basket.idempotency.ProcessedEventService;
+import io.github.codecraft87.eshop.basket.idempotency.BasketProcessedEventService;
 import io.github.codecraft87.eshop.basket.service.BasketService;
 import io.github.codecraft87.eshop.messaging.config.QueueConstants;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class BasketEventConsumer {
     
     private final ObjectMapper objectMapper;
     
-    private final ProcessedEventService processedEventService;
+    private final BasketProcessedEventService processedEventService;
     
     @RabbitListener(queues = QueueConstants.BASKET_ORDER_CREATED_QUEUE)
     public void handleOrderCreatedEvent(String payload){

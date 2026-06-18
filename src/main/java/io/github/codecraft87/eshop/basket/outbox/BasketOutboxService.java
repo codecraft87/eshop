@@ -29,13 +29,14 @@ public class BasketOutboxService {
 
     @Transactional
     public void publishPendingEvents() {
-        log.info("Publishing pending events");
+       
         List<BasketOutboxMessage> events = outboxRepository
                                 .findByStatusInOrderByCreatedAt(
                                         List.of(
                                                 OutboxEventStatus.NEW,
                                                 OutboxEventStatus.FAILED));
-        log.info("Found Pending events to publish {} ", events.size());
+        if(events.size()>0)
+            log.info("Pending basket events to publish {} ", events.size());
         
         for (BasketOutboxMessage event : events) {
 

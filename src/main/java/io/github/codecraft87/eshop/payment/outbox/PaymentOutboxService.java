@@ -99,20 +99,24 @@ public class PaymentOutboxService {
     }
 
     public void publishPendingEvents() {
-        log.info("Publishing pending events ");
+        
         List<PaymentOutboxMessage> events = outboxRepository.
                 findByStatusInOrderByCreatedAt(
                         List.of(
                                 PaymentEventStatus.NEW,
                                 PaymentEventStatus.FAILED));
+        if(events.size()>0)
+            log.info("Pending payment events to publish {} ", events.size());
         for(PaymentOutboxMessage event: events) {
             try {
                 switch(event.getEventType()) {
                 case PaymentEventType.PAYMENT_DONE:
                     publishPaymentDoneEvent(event.getPayload());
+                    event.markPublished();
                     break;
                 case PaymentEventType.PAYMENT_FAILED:
                     publishPaymentFailedEvent(event.getPayload());
+                    event.markPublished();
                     break;
                 default:
                     log.info("unknown event type to handle");
@@ -121,6 +125,10 @@ public class PaymentOutboxService {
                 log.error("Event published failed ", ex);
                 event.markFailed(ex.getMessage());
             }
+        }
+        if(events.size()>0) {
+            outboxRepository.saveAll(events);
+            log.info("events saved");
         }
     }
 

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 public class PaymentOutboxScheduler {
 
     private final PaymentOutboxService outboxEventService;
+    
     @Scheduled(fixedDelay = 5000)
     public void publishEvents() {
       

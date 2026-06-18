@@ -10,7 +10,7 @@ import io.github.codecraft87.eshop.catalog.service.CatalogModuleService;
 import io.github.codecraft87.eshop.messaging.config.QueueConstants;
 import io.github.codecraft87.eshop.order.dto.OrderItemRequest;
 import io.github.codecraft87.eshop.order.dto.OrderRequest;
-import io.github.codecraft87.eshop.order.idempotency.ProcessedEventService;
+import io.github.codecraft87.eshop.order.idempotency.OrderProcessedEventService;
 import io.github.codecraft87.eshop.order.outbox.OrderOutboxService;
 import io.github.codecraft87.eshop.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class BasketCheckedOutEventConsumer {
     private final CatalogModuleService productService;
     private final OrderService orderService;
     private final ObjectMapper objectMapper;
-    private final ProcessedEventService processedEventService;
+    private final OrderProcessedEventService processedEventService;
     private final OrderOutboxService orderOutboxEventService;
 
     @RabbitListener(queues = QueueConstants.ORDER_BASKET_CHECKOUT_QUEUE)
@@ -36,7 +36,7 @@ public class BasketCheckedOutEventConsumer {
                         payload,
                         BasketCheckedOutEvent.class);
         if(null!=checkedOutEvent) {
-            log.info("Received BasketCheckedOutEvent for basket {}"+checkedOutEvent.basketId());
+            log.info("Received BasketCheckedOutEvent for basket {} "+checkedOutEvent.basketId());
             UUID eventId = UUID.fromString(checkedOutEvent.eventId());
             if(processedEventService.checkIfEventIsProcessed(eventId)) {
                 log.info(
@@ -45,12 +45,14 @@ public class BasketCheckedOutEventConsumer {
                 return;
             }
             createOrder(checkedOutEvent);
+            log.info("Order created");
             processedEventService.addProcessedEventEntry(eventId);
-
+            log.info("adding event to processed event");
             orderOutboxEventService.saveOrderCreatedEvent(
                    new OrderCreated(checkedOutEvent.basketId(),
                     checkedOutEvent.userId(),
                     null));
+            log.info("saving event for order created");
         }else {
             log.info("Event is null");
         }
@@ -73,7 +75,6 @@ public class BasketCheckedOutEventConsumer {
                     .sum();
         request.setTotalAmount(totalAmount);
         orderService.createOrder(request);
-        log.info("Order created from publisher");
     }
 
     private OrderItemRequest getOrderItemDTO(BasketItemEvent basketItem) {

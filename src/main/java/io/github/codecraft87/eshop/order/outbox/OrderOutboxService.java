@@ -26,7 +26,7 @@ public class OrderOutboxService {
     
     private final RabbitTemplate rabbitTemplate;
     
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
     
     public Long saveOrderCreatedEvent(OrderCreated orderCreated) {
       log.info("Saving Order Out box event {} ", orderCreated);
@@ -46,7 +46,7 @@ public class OrderOutboxService {
             log.info("Build outbox message");
             OrderOutboxMessage outboxMessage = new OrderOutboxMessage();
             outboxMessage.setEventId(UUID.randomUUID());
-            outboxMessage.setEventType(OrderEventType.ORDER_CREATED);
+            outboxMessage.setEventType(OrderEventType.PAYMENT_REQUESTED);
             outboxMessage.setStatus(OrderEventStatus.NEW);
             outboxMessage.setRetryCount(0);
             outboxMessage.setCreatedAt(Instant.now());
@@ -96,13 +96,14 @@ public class OrderOutboxService {
     }
     
     public void publishPendingEvents() {
-        log.info("Publishing pending events ");
+       
         List<OrderOutboxMessage> events = outboxRepository
                 .findByStatusInOrderByCreatedAt(
                         List.of(
                                 OrderEventStatus.NEW, 
                                 OrderEventStatus.FAILED));
-        log.info("Found pending events to publish {} ", events.size());
+      if(events.size()>0)
+            log.info("Pending order events to publish {} ", events.size());
 
         for (OrderOutboxMessage event : events) {
             try {

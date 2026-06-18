@@ -164,7 +164,7 @@ public class OrderService implements OrderModuleService {
     public void updateOrderForPayment(Long orderId) {
         log.info("Updating order for successful payment");
         Order order = getOrderById(orderId);
-        if(order.getStatus()==OrderStatus.PAYMENT_FAILED) {
+        if(order.getStatus()==OrderStatus.PAYMENT_PENDING) {
             
             order.setStatus(OrderStatus.PAYMENT_DONE);
             saveOrder(order);

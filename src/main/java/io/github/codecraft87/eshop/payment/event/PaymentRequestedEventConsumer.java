@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
-import io.github.codecraft87.eshop.basket.idempotency.ProcessedEventService;
 import io.github.codecraft87.eshop.messaging.config.QueueConstants;
+import io.github.codecraft87.eshop.order.idempotency.OrderProcessedEventService;
 import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
 import io.github.codecraft87.eshop.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class PaymentRequestedEventConsumer {
     
     private final ObjectMapper objectMapper;
     
-    private final ProcessedEventService processedEventService;
+    private final OrderProcessedEventService processedEventService;
     
     @RabbitListener(queues = QueueConstants.PAYMENT_ORDER_PAYMENT_REQUESTED_QUEUE)
     public void handlePaymentRequested(String payload) {

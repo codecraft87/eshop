@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.basket.idempotency;
+package io.github.codecraft87.eshop.payment.idempotency;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,8 +12,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "processed_event", schema = "basket")
-public class ProcessedEvent {
+@Table(name = "processed_event", schema = "ordering")
+public class PaymentProcessedEvent {
+
     @Id
     private UUID eventId;
     
