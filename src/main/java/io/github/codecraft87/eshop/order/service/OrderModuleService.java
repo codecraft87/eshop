@@ -5,9 +5,9 @@ import io.github.codecraft87.eshop.order.entity.Order;
 
 public interface OrderModuleService {
 
-    Long createOrder(OrderRequest orderRequest);
-    
-    Order getOrder(Long orderId);
-    
-    Order saveOrder(Order order);
+  Long createOrder(OrderRequest orderRequest);
+
+  Order getOrder(Long orderId);
+
+  Order saveOrder(Order order);
 }

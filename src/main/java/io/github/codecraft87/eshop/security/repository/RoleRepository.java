@@ -8,5 +8,5 @@ import io.github.codecraft87.eshop.security.entity.Role;
 
 public interface RoleRepository extends JpaRepository<Role, Long> {
 
-    public Optional<Role> findByName(String name);
+  public Optional<Role> findByName(String name);
 }

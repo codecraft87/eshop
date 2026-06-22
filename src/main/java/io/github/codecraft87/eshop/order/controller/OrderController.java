@@ -17,6 +17,7 @@ import io.github.codecraft87.eshop.common.dto.OperationResponse;
 import io.github.codecraft87.eshop.order.dto.OrderRequest;
 import io.github.codecraft87.eshop.order.dto.OrderResponse;
 import io.github.codecraft87.eshop.order.dto.ProcessOrderInput;
+import io.github.codecraft87.eshop.order.enums.PaymentMode;
 import io.github.codecraft87.eshop.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -26,72 +27,56 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderController {
 
-    private final OrderService orderService;
+  private final OrderService orderService;
 
-    public OrderController(OrderService service) {
-        this.orderService = service;
-    }
+  public OrderController(OrderService service) {
+    this.orderService = service;
+  }
 
-    @GetMapping("/about")
-    public ResponseEntity<String> about() {
-        return ResponseEntity.ok("<h1>Order Service is running.</h1>");
-    }
+  @GetMapping("/about")
+  public ResponseEntity<String> about() {
+    return ResponseEntity.ok("<h1>Order Service is running.</h1>");
+  }
 
-    @PostMapping
-    public ResponseEntity<OperationResponse> createOrder(
-                @Valid 
-                @RequestBody OrderRequest orderRequest) {
-        final Long orderId = orderService.createOrder(orderRequest);
-        return ResponseEntity.status(
-                HttpStatus.CREATED)
-                .body(
-                        new OperationResponse(orderId, "Order Created"));
-    }
+  @PostMapping
+  public ResponseEntity<OperationResponse> createOrder(
+      @Valid @RequestBody OrderRequest orderRequest) {
+    final Long orderId = orderService.createOrder(orderRequest);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(new OperationResponse(orderId, "Order Created"));
+  }
 
-    @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponse> retrieveOrderDetails(
-                                @PathVariable("orderId") Long orderId) {
-        return ResponseEntity
-                .ok()
-                .body(orderService.getOrderDetails(orderId));
+  @GetMapping("/{orderId}")
+  public ResponseEntity<OrderResponse> retrieveOrderDetails(@PathVariable("orderId") Long orderId) {
+    return ResponseEntity.ok().body(orderService.getOrderDetails(orderId));
+  }
 
-    }
+  @GetMapping("/user/{userId}")
+  public ResponseEntity<List<OrderResponse>> getOrders(@PathVariable("userId") Long userId) {
+    return ResponseEntity.ok().body(orderService.getOrders(userId));
+  }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderResponse>> getOrders(
-                            @PathVariable("userId") Long userId) {
-        return ResponseEntity
-                .ok()
-                .body(orderService.getOrders(userId));
+  @PutMapping("/{orderId}/cancel")
+  public ResponseEntity<OperationResponse> cancelOrder(@PathVariable("orderId") Long orderId) {
+    OrderResponse cancelledOrder = orderService.cancelOrder(orderId);
+    return ResponseEntity.ok()
+        .body(new OperationResponse(cancelledOrder.getOrderId(), "Order Cancelled"));
+  }
 
-    }
+  @PutMapping("/{orderId}")
+  public ResponseEntity<OrderRequest> updateOrder(
+      @PathVariable("orderId") Long orderId, @RequestBody OrderRequest orderDto) {
+    OrderRequest updatedOrder = orderService.updateOrder(orderId, orderDto);
+    return ResponseEntity.ok().body(updatedOrder);
+  }
 
-    @PutMapping("/{orderId}/cancel")
-    public ResponseEntity<OperationResponse> cancelOrder(
-                        @PathVariable("orderId") Long orderId) {
-        OrderResponse cancelledOrder = orderService.cancelOrder(orderId);
-        return ResponseEntity
-                .ok()
-                .body(
-                        new OperationResponse(cancelledOrder.getOrderId(), "Order Cancelled"));
-    }
+  @PostMapping("/{orderId}/process")
+  public ResponseEntity<String> processOrder(
+      @PathVariable("orderId") Long orderId,
+      @RequestParam(defaultValue = "SIMULATED_SUCCESS") PaymentMode paymentMode) {
 
-    @PutMapping("/{orderId}")
-    public ResponseEntity<OrderRequest> updateOrder(
-                    @PathVariable("orderId") Long orderId, 
-                    @RequestBody OrderRequest orderDto) {
-        OrderRequest updatedOrder = orderService
-                .updateOrder(orderId, orderDto);
-        return ResponseEntity.ok().body(updatedOrder);
-    }
-    
-    @PostMapping("/{orderId}/process")
-    public ResponseEntity<String> processOrder(
-        @PathVariable("orderId") Long orderId,
-        @RequestParam(defaultValue = "false") Boolean simulateSuccess){
-        log.info("Processing order "+orderId);
-        orderService.processOrder(new ProcessOrderInput(orderId, simulateSuccess));
-        return ResponseEntity
-                .ok("Order procssed");
-    }
+    log.info("Processing order " + orderId);
+    orderService.processOrder(new ProcessOrderInput(orderId, paymentMode));
+    return ResponseEntity.ok("Order procssed");
+  }
 }

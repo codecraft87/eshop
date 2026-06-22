@@ -9,10 +9,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BasketOutboxScheduler {
 
-    private final BasketOutboxService outboxService;
-    @Scheduled(fixedDelay = 5000)
-    public void publishEvents() {
-      
-        outboxService.publishPendingEvents();
-    }
+  private final BasketOutboxService outboxService;
+
+  @Scheduled(fixedDelay = 5000)
+  public void publishEvents() {
+
+    outboxService.publishPendingEvents();
+  }
 }

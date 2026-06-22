@@ -17,14 +17,13 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class OrderRequest {
 
-    @NotNull(message = "{user.notnull}")
-    private String userId;
+  @NotNull(message = "{user.notnull}")
+  private String userId;
 
-    @NotNull(message = "{amount.notnull}")
-    private Double totalAmount;
+  @NotNull(message = "{amount.notnull}")
+  private Double totalAmount;
 
-    private OrderStatus status;
+  private OrderStatus status;
 
-    @Builder.Default
-    private List<OrderItemRequest> orderItems = new ArrayList<>();
+  @Builder.Default private List<OrderItemRequest> orderItems = new ArrayList<>();
 }

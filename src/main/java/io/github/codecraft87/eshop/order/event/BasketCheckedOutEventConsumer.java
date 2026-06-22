@@ -22,70 +22,59 @@ import tools.jackson.databind.ObjectMapper;
 @RequiredArgsConstructor
 public class BasketCheckedOutEventConsumer {
 
-    private final CatalogModuleService productService;
-    private final OrderService orderService;
-    private final ObjectMapper objectMapper;
-    private final OrderProcessedEventService processedEventService;
-    private final OrderOutboxService orderOutboxEventService;
+  private final CatalogModuleService productService;
+  private final OrderService orderService;
+  private final ObjectMapper objectMapper;
+  private final OrderProcessedEventService processedEventService;
+  private final OrderOutboxService orderOutboxEventService;
 
-    @RabbitListener(queues = QueueConstants.ORDER_BASKET_CHECKOUT_QUEUE)
-    public void handleBasketCheckedOutEvent( String payload){
-        
-        BasketCheckedOutEvent checkedOutEvent =
-                objectMapper.readValue(
-                        payload,
-                        BasketCheckedOutEvent.class);
-        if(null!=checkedOutEvent) {
-            log.info("Received BasketCheckedOutEvent for basket {} "+checkedOutEvent.basketId());
-            UUID eventId = UUID.fromString(checkedOutEvent.eventId());
-            if(processedEventService.checkIfEventIsProcessed(eventId)) {
-                log.info(
-                        "Duplicate event {} ignored",
-                        eventId);
-                return;
-            }
-            createOrder(checkedOutEvent);
-            log.info("Order created");
-            processedEventService.addProcessedEventEntry(eventId);
-            log.info("adding event to processed event");
-            orderOutboxEventService.saveOrderCreatedEvent(
-                   new OrderCreated(checkedOutEvent.basketId(),
-                    checkedOutEvent.userId(),
-                    null));
-            log.info("saving event for order created");
-        }else {
-            log.info("Event is null");
-        }
+  @RabbitListener(queues = QueueConstants.ORDER_BASKET_CHECKOUT_QUEUE)
+  public void handleBasketCheckedOutEvent(String payload) {
+
+    BasketCheckedOutEvent checkedOutEvent =
+        objectMapper.readValue(payload, BasketCheckedOutEvent.class);
+    if (null != checkedOutEvent) {
+      log.info("Received BasketCheckedOutEvent for basket {} " + checkedOutEvent.basketId());
+      UUID eventId = UUID.fromString(checkedOutEvent.eventId());
+      if (processedEventService.checkIfEventIsProcessed(eventId)) {
+        log.info("Duplicate event {} ignored", eventId);
+        return;
+      }
+      createOrder(checkedOutEvent);
+      log.info("Order created");
+      processedEventService.addProcessedEventEntry(eventId);
+      log.info("adding event to processed event");
+      orderOutboxEventService.saveOrderCreatedEvent(
+          new OrderCreated(checkedOutEvent.basketId(), checkedOutEvent.userId(), null));
+      log.info("saving event for order created");
+    } else {
+      log.info("Event is null");
     }
+  }
 
-    private void createOrder(BasketCheckedOutEvent checkedOutEvent) {
-        OrderRequest request = new OrderRequest();
-        request.setUserId(checkedOutEvent.userId().toString());
-        request.setOrderItems(checkedOutEvent.items()
-                            .stream()
-                            .map(this::getOrderItemDTO)
-                            .toList());
-   
-        Double totalAmount = request.getOrderItems()
-                    .stream()
-                    .mapToDouble(
-                            item -> 
-                            item.getPrice() 
-                                        * item.getQuantity())
-                    .sum();
-        request.setTotalAmount(totalAmount);
-        orderService.createOrder(request);
-    }
+  private void createOrder(BasketCheckedOutEvent checkedOutEvent) {
+    OrderRequest request = new OrderRequest();
+    request.setUserId(checkedOutEvent.userId().toString());
+    request.setOrderItems(checkedOutEvent.items().stream().map(this::getOrderItemDTO).toList());
 
-    private OrderItemRequest getOrderItemDTO(BasketItemEvent basketItem) {
-        OrderItemRequest orderItem = OrderItemRequest.builder()
-                .productId(basketItem.productId())
-                .quantity(basketItem.quantity())
-                .build();
+    Double totalAmount =
+        request.getOrderItems().stream()
+            .mapToDouble(item -> item.getPrice() * item.getQuantity())
+            .sum();
+    request.setTotalAmount(totalAmount);
+    orderService.createOrder(request);
+  }
 
-        Product product = productService.getProduct(orderItem.getProductId());
-        orderItem.setProductName(product.getName());
-        orderItem.setPrice(product.getPrice());
-        return orderItem;
-    }
+  private OrderItemRequest getOrderItemDTO(BasketItemEvent basketItem) {
+    OrderItemRequest orderItem =
+        OrderItemRequest.builder()
+            .productId(basketItem.productId())
+            .quantity(basketItem.quantity())
+            .build();
+
+    Product product = productService.getProduct(orderItem.getProductId());
+    orderItem.setProductName(product.getName());
+    orderItem.setPrice(product.getPrice());
+    return orderItem;
+  }
 }

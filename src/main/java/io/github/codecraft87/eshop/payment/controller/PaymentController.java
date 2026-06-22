@@ -20,42 +20,36 @@ import jakarta.validation.Valid;
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+  private final PaymentService paymentService;
 
-    public PaymentController(PaymentService service) {
-        this.paymentService = service;
-    }
+  public PaymentController(PaymentService service) {
+    this.paymentService = service;
+  }
 
-    @GetMapping("/about")
-    public ResponseEntity<String> about() {
-        return ResponseEntity.ok().body("<h1>Payment Service is running.</h1>");
-    }
+  @GetMapping("/about")
+  public ResponseEntity<String> about() {
+    return ResponseEntity.ok().body("<h1>Payment Service is running.</h1>");
+  }
 
-    @PostMapping
-    public ResponseEntity<OperationResponse> processPayment(
-                        @Valid @RequestBody PaymentRequest paymentRequest) {
-        Long paymentId = paymentService.processPayment(paymentRequest);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new OperationResponse(paymentId, "Payment processed"));
-    }
+  @PostMapping
+  public ResponseEntity<OperationResponse> processPayment(
+      @Valid @RequestBody PaymentRequest paymentRequest) {
+    Long paymentId = paymentService.processPayment(paymentRequest);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(new OperationResponse(paymentId, "Payment processed"));
+  }
 
-    @PutMapping("/{paymentId}/retry")
-    public ResponseEntity<OperationResponse> retryPayment(
-                    @PathVariable("paymentId") Long paymentId) {
-        Long payId = paymentService.retryPayment(paymentId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(new OperationResponse(payId, "Payment processed"));
-    }
+  @PutMapping("/{paymentId}/retry")
+  public ResponseEntity<OperationResponse> retryPayment(@PathVariable("paymentId") Long paymentId) {
+    Long payId = paymentService.retryPayment(paymentId);
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(new OperationResponse(payId, "Payment processed"));
+  }
 
-    @GetMapping("/{paymentId}")
-    public ResponseEntity<PaymentResponse> getPaymentDetails(
-                    @PathVariable("paymentId") Long paymentId) {
-        PaymentResponse paymentResponse = paymentService.getPaymentDetails(
-                                                        paymentId);
-        return ResponseEntity
-                .ok()
-                .body(paymentResponse);
-    }
+  @GetMapping("/{paymentId}")
+  public ResponseEntity<PaymentResponse> getPaymentDetails(
+      @PathVariable("paymentId") Long paymentId) {
+    PaymentResponse paymentResponse = paymentService.getPaymentDetails(paymentId);
+    return ResponseEntity.ok().body(paymentResponse);
+  }
 }

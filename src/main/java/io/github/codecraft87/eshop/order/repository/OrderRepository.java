@@ -8,9 +8,8 @@ import io.github.codecraft87.eshop.order.enums.OrderStatus;
 
 import java.util.List;
 
-
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    List<Order> findByUserIdAndStatus(String userId, OrderStatus status);
+  List<Order> findByUserIdAndStatus(String userId, OrderStatus status);
 }

@@ -8,5 +8,5 @@ import io.github.codecraft87.eshop.basket.enums.BasketStatus;
 
 @Repository
 public interface BasketRepository extends JpaRepository<Basket, Long> {
-    Basket findByUserIdAndStatus(Long orderId, BasketStatus status);
-    }
+  Basket findByUserIdAndStatus(Long orderId, BasketStatus status);
+}

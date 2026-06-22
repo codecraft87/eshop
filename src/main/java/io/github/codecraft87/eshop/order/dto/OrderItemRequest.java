@@ -12,12 +12,12 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 public class OrderItemRequest {
-    
-    private long productId;
 
-    private String productName;
+  private long productId;
 
-    private Integer quantity;
+  private String productName;
 
-    private Double price;
+  private Integer quantity;
+
+  private Double price;
 }

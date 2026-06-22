@@ -30,27 +30,27 @@ import lombok.Setter;
 @Builder
 public class Order {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "user_id")
-    private String userId;
+  @Column(name = "user_id")
+  private String userId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "order_status")
-    private OrderStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "order_status")
+  private OrderStatus status;
 
-    @Column(name = "amount")
-    private double totalAmount;
+  @Column(name = "amount")
+  private double totalAmount;
 
-    @Column(name = "created_at")
-    private Instant createdAt;
+  @Column(name = "created_at")
+  private Instant createdAt;
 
-    @Column(name = "updated_at")
-    private Instant updatedAt;
+  @Column(name = "updated_at")
+  private Instant updatedAt;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+  @Builder.Default
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<OrderItem> orderItems = new ArrayList<>();
 }

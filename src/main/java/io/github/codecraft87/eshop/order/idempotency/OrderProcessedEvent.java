@@ -15,8 +15,7 @@ import lombok.Setter;
 @Table(name = "processed_event", schema = "ordering")
 public class OrderProcessedEvent {
 
-    @Id
-    private UUID eventId;
-    
-    private Instant processAt;
+  @Id private UUID eventId;
+
+  private Instant processAt;
 }

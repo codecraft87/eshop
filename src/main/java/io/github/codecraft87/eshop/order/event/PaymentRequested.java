@@ -1,8 +1,5 @@
 package io.github.codecraft87.eshop.order.event;
 
-public record PaymentRequested(
-                        Long orderId,
-                        Boolean simulate,
-                        String eventId) {
+import io.github.codecraft87.eshop.order.enums.PaymentMode;
 
-}
+public record PaymentRequested(Long orderId, PaymentMode paymentMode, String eventId) {}

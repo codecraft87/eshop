@@ -17,28 +17,25 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 public class OrderPaymentCompletedConsumer {
 
-    private final OrderService orderService;
-    
-    private final ObjectMapper objectMapper;
-    
-    private final OrderProcessedEventService processedEventService;
-    
-    @RabbitListener(queues = QueueConstants.ORDER_PAYMENT_COMPLETED_QUEUE)
-    public void handlePaymentRequestedEvent(String payload) {
-        log.info("Received Payment requested event");
-        
-        PaymentAckowledge paymentCompleted = objectMapper.readValue(
-                payload, PaymentAckowledge.class);
-        if(paymentCompleted!=null) {
-            UUID eventId = UUID.fromString(paymentCompleted.eventId());
-            if(processedEventService.checkIfEventIsProcessed(eventId)) {
-                log.info(
-                        "Duplicate event {} ignored",
-                        eventId);
-                return;
-            }
-            orderService.updateOrderForPayment(paymentCompleted.orderId());
-            processedEventService.addProcessedEventEntry(eventId);
-        }
+  private final OrderService orderService;
+
+  private final ObjectMapper objectMapper;
+
+  private final OrderProcessedEventService processedEventService;
+
+  @RabbitListener(queues = QueueConstants.ORDER_PAYMENT_COMPLETED_QUEUE)
+  public void handlePaymentRequestedEvent(String payload) {
+    log.info("Received Payment requested event ");
+
+    PaymentAckowledge paymentCompleted = objectMapper.readValue(payload, PaymentAckowledge.class);
+    if (paymentCompleted != null) {
+      UUID eventId = UUID.fromString(paymentCompleted.eventId());
+      if (processedEventService.checkIfEventIsProcessed(eventId)) {
+        log.info("Duplicate event {} ignored", eventId);
+        return;
+      }
+      orderService.updateOrderForPayment(paymentCompleted.orderId());
+      processedEventService.addProcessedEventEntry(eventId);
     }
+  }
 }

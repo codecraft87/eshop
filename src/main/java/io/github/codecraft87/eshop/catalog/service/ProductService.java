@@ -20,70 +20,65 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class ProductService implements CatalogModuleService {
 
-    private final NotificationModuleService notificationService;
-    private final ProductRepository catalogRepository;
-    
-    @Transactional
-    public Long addProduct(ProductRequest productRequest) {
-        final Product product = ProductMapper
-                                    .getProductEntity(productRequest);
-        product.setCreatedAt(Instant.now());
-        Long productId = saveProduct(product).getId();
+  private final NotificationModuleService notificationService;
+  private final ProductRepository catalogRepository;
 
-        notificationService.productCreated(productId);
-        return productId;
-    }
+  @Transactional
+  public Long addProduct(ProductRequest productRequest) {
+    final Product product = ProductMapper.getProductEntity(productRequest);
+    product.setCreatedAt(Instant.now());
+    Long productId = saveProduct(product).getId();
 
-    public ProductResponse getProductDetails(Long productId) {
-        final Product product = getProduct(productId); 
-        
-        return ProductMapper.getProductResponse(product);
-    }
+    notificationService.productCreated(productId);
+    return productId;
+  }
 
-    public List<ProductResponse> getAllProducts(){
-        final List<Product> productList = catalogRepository.findAll();
-        final List<ProductResponse> productDtoList = 
-                productList
-                    .stream()
-                    .map(ProductMapper::getProductResponse)
-                    .collect(Collectors.toList());
-        return productDtoList;
-    }
-    
-    @Transactional
-    public ProductResponse updateProduct(Long productId,
-            ProductRequest productRequest) {
-        final Product productToUpdate = getProduct(productId);
-        productToUpdate.setUpdatedAt(Instant.now());
-        productToUpdate.setName(productRequest.getName());
-        productToUpdate.setDescription(productRequest.getDescription());
-        productToUpdate.setPrice(productRequest.getPrice());
-        
-        final Product updatedProduct = saveProduct(productToUpdate);
-        notificationService.productUpdated(updatedProduct.getId());
-        return ProductMapper.getProductResponse(updatedProduct);
-    }
-    
-    @Transactional
-    public Long deleteProduct(Long productId) {
-        final Product productToBeDeleted = getProduct(productId);
-        catalogRepository.delete(productToBeDeleted);
+  public ProductResponse getProductDetails(Long productId) {
+    final Product product = getProduct(productId);
 
-        notificationService.productDeleted(productId);
-        
-        return productId;
-    }
+    return ProductMapper.getProductResponse(product);
+  }
 
-    public Product getProduct(Long productId) {
-        final Product product = catalogRepository
-                    .findById(productId)
-                    .orElseThrow(()-> 
-                            new ProductNotFoundException(productId));
-        return product;
-    }
-    
-    private Product saveProduct(Product product) {
-        product.setUpdatedAt(Instant.now());
-        return catalogRepository.save(product);
-    }
+  public List<ProductResponse> getAllProducts() {
+    final List<Product> productList = catalogRepository.findAll();
+    final List<ProductResponse> productDtoList =
+        productList.stream().map(ProductMapper::getProductResponse).collect(Collectors.toList());
+    return productDtoList;
+  }
+
+  @Transactional
+  public ProductResponse updateProduct(Long productId, ProductRequest productRequest) {
+    final Product productToUpdate = getProduct(productId);
+    productToUpdate.setUpdatedAt(Instant.now());
+    productToUpdate.setName(productRequest.getName());
+    productToUpdate.setDescription(productRequest.getDescription());
+    productToUpdate.setPrice(productRequest.getPrice());
+
+    final Product updatedProduct = saveProduct(productToUpdate);
+    notificationService.productUpdated(updatedProduct.getId());
+    return ProductMapper.getProductResponse(updatedProduct);
+  }
+
+  @Transactional
+  public Long deleteProduct(Long productId) {
+    final Product productToBeDeleted = getProduct(productId);
+    catalogRepository.delete(productToBeDeleted);
+
+    notificationService.productDeleted(productId);
+
+    return productId;
+  }
+
+  public Product getProduct(Long productId) {
+    final Product product =
+        catalogRepository
+            .findById(productId)
+            .orElseThrow(() -> new ProductNotFoundException(productId));
+    return product;
+  }
+
+  private Product saveProduct(Product product) {
+    product.setUpdatedAt(Instant.now());
+    return catalogRepository.save(product);
+  }
 }

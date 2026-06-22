@@ -10,8 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OperationResponse {
-   
-    private Long id;
-    
-    private String message;
+
+  private Long id;
+
+  private String message;
 }

@@ -11,10 +11,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class PaymentResponse extends PaymentRequest {
 
-    private Long paymentId;
-    
-    private Instant createdAt;
+  private Long paymentId;
 
-    private Instant updatedAt;
+  private Instant createdAt;
 
+  private Instant updatedAt;
 }

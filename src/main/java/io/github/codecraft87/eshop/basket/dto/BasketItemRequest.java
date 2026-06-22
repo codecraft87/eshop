@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BasketItemRequest {
 
-    private Long productId;
-    
-    private Integer quantity;
+  private Long productId;
+
+  private Integer quantity;
 }

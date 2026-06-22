@@ -17,33 +17,32 @@ import io.github.codecraft87.eshop.security.service.UserService;
 @RequestMapping("/auth")
 public class AuthController {
 
-    final private UserService userService;
-    
-    final private AuthenticationManager authManager;
-    
-    final private JwtService jwts;
-    
-    public AuthController(
-        UserService userService, 
-        AuthenticationManager authMgr,
-        JwtService jwts) {
-        this.userService = userService;
-        this.authManager = authMgr;
-        this.jwts = jwts;
+  private final UserService userService;
+
+  private final AuthenticationManager authManager;
+
+  private final JwtService jwts;
+
+  public AuthController(UserService userService, AuthenticationManager authMgr, JwtService jwts) {
+    this.userService = userService;
+    this.authManager = authMgr;
+    this.jwts = jwts;
+  }
+
+  @PostMapping("register")
+  public ResponseEntity<String> registerUser(@RequestBody UserRequest user) {
+    userService.saveUser(user);
+    return ResponseEntity.ok(user.getUsername() + " registered");
+  }
+
+  @PostMapping("login")
+  public String login(@RequestBody UserRequest user) {
+    Authentication authentication =
+        authManager.authenticate(
+            new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+    if (authentication.isAuthenticated()) {
+      return jwts.generateToken(user.getUsername());
     }
-    @PostMapping("register")
-    public ResponseEntity<String> registerUser(@RequestBody UserRequest user) {
-        userService.saveUser(user);
-        return ResponseEntity.ok(user.getUsername() + " registered");
-    }
-    
-    @PostMapping("login")
-    public String login(@RequestBody UserRequest user) {
-        Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        if(authentication.isAuthenticated()) {
-            return jwts.generateToken(user.getUsername());
-        }
-       return "Failed";
-    }
+    return "Failed";
+  }
 }

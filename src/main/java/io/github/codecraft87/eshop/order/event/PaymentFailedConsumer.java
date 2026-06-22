@@ -17,29 +17,24 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class PaymentFailedConsumer {
 
-    private final OrderService orderService;
-    
-    private final ObjectMapper objectMapper;
-    
-    private final OrderProcessedEventService processedEventService;
-    
-    
-    @RabbitListener(queues = QueueConstants.ORDER_PAYMENT_FAILED_QUEUE)
-    public void handlePaymentFailedEvent(
-                                String payload) {
-        log.info("Received payment failed event ");
-        PaymentAckowledge failedEvent = objectMapper.readValue(
-                payload, PaymentAckowledge.class);
-        if(failedEvent!=null) {
-            UUID eventId = UUID.fromString(failedEvent.eventId());
-            if(processedEventService.checkIfEventIsProcessed(eventId)) {
-                log.info(
-                        "Duplicate event {} ignored",
-                        eventId);
-                return;
-            }
-            orderService.markOrderAsFailed(failedEvent.orderId());
-            processedEventService.addProcessedEventEntry(eventId);
-        }
+  private final OrderService orderService;
+
+  private final ObjectMapper objectMapper;
+
+  private final OrderProcessedEventService processedEventService;
+
+  @RabbitListener(queues = QueueConstants.ORDER_PAYMENT_FAILED_QUEUE)
+  public void handlePaymentFailedEvent(String payload) {
+    log.info("Received payment failed event ");
+    PaymentAckowledge failedEvent = objectMapper.readValue(payload, PaymentAckowledge.class);
+    if (failedEvent != null) {
+      UUID eventId = UUID.fromString(failedEvent.eventId());
+      if (processedEventService.checkIfEventIsProcessed(eventId)) {
+        log.info("Duplicate event {} ignored", eventId);
+        return;
+      }
+      orderService.markOrderAsFailed(failedEvent.orderId());
+      processedEventService.addProcessedEventEntry(eventId);
     }
+  }
 }

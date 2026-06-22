@@ -14,8 +14,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "processed_event", schema = "basket")
 public class BasketProcessedEvent {
-    @Id
-    private UUID eventId;
-    
-    private Instant processAt;
+  @Id private UUID eventId;
+
+  private Instant processAt;
 }

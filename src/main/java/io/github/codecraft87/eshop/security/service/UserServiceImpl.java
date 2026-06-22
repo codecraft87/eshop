@@ -12,19 +12,19 @@ import io.github.codecraft87.eshop.security.repository.UserRepository;
 @Service
 public class UserServiceImpl implements UserDetailsService {
 
-    final private UserRepository userRepository;
-    
-    public UserServiceImpl(UserRepository repository) {
-        this.userRepository = repository;
+  private final UserRepository userRepository;
+
+  public UserServiceImpl(UserRepository repository) {
+    this.userRepository = repository;
+  }
+
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    User user = userRepository.findByUsername(username);
+    if (user == null) {
+      throw new UsernameNotFoundException(username + " user not found");
     }
-    
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
-        if(user==null) {
-            throw new UsernameNotFoundException(username + " user not found");
-        }
-        UserPrinicipal userPrinicipal = new UserPrinicipal(user);
-        return userPrinicipal;
-    }
+    UserPrinicipal userPrinicipal = new UserPrinicipal(user);
+    return userPrinicipal;
+  }
 }

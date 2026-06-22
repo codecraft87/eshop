@@ -6,6 +6,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BasketProcessedEventRepository extends JpaRepository<BasketProcessedEvent, UUID> {
-
-}
+public interface BasketProcessedEventRepository extends JpaRepository<BasketProcessedEvent, UUID> {}

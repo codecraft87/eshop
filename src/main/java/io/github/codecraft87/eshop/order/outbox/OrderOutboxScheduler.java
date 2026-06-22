@@ -9,10 +9,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderOutboxScheduler {
 
-    private final OrderOutboxService outboxEventService;
-    @Scheduled(fixedDelay = 5000)
-    public void publishEvents() {
-      
-        outboxEventService.publishPendingEvents();
-    }
+  private final OrderOutboxService outboxEventService;
+
+  @Scheduled(fixedDelay = 5000)
+  public void publishEvents() {
+
+    outboxEventService.publishPendingEvents();
+  }
 }

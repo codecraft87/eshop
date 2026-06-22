@@ -11,7 +11,7 @@ import io.github.codecraft87.eshop.payment.enums.PaymentStatus;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    boolean existsByOrderIdAndStatus(Long orderId, PaymentStatus status);
+  boolean existsByOrderIdAndStatus(Long orderId, PaymentStatus status);
 
-    List<Payment> findByOrderId(Long orderId);
+  List<Payment> findByOrderId(Long orderId);
 }

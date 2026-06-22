@@ -24,23 +24,23 @@ import lombok.Setter;
 @Table(name = "order_item", schema = "ordering")
 public class OrderItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "order_id")
+  private Order order;
 
-    @Column(name = "product_id")
-    private Long productId;
+  @Column(name = "product_id")
+  private Long productId;
 
-    @Column(name = "product_name")
-    private String productName;
+  @Column(name = "product_name")
+  private String productName;
 
-    @Column(name = "quantity")
-    private Integer quantity;
+  @Column(name = "quantity")
+  private Integer quantity;
 
-    @Column(name = "price")
-    private Double price;
+  @Column(name = "price")
+  private Double price;
 }

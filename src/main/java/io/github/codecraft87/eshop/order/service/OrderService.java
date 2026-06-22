@@ -30,158 +30,150 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderService implements OrderModuleService {
 
-    private final NotificationService notificationService;
+  private final NotificationService notificationService;
 
-    private final OrderRepository orderRepository;
-    
-    private final OrderOutboxService outboxService;
+  private final OrderRepository orderRepository;
 
-    @Transactional
-    public Long createOrder(OrderRequest orderRequest) {
-        
-        final Order order = OrderMapper.getOrderEntity(orderRequest);
+  private final OrderOutboxService outboxService;
 
-        markOrderStatus(order, OrderStatus.CREATED, 
-                            OrderLifecycleEvent.CREATE);
-        Long orderId = saveOrder(order).getId();
-        
-        notificationService.orderCreated(orderId);
-        
-        return orderId;
+  @Transactional
+  public Long createOrder(OrderRequest orderRequest) {
+
+    final Order order = OrderMapper.getOrderEntity(orderRequest);
+
+    markOrderStatus(order, OrderStatus.CREATED, OrderLifecycleEvent.CREATE);
+    Long orderId = saveOrder(order).getId();
+
+    notificationService.orderCreated(orderId);
+
+    return orderId;
+  }
+
+  @Transactional
+  public OrderResponse cancelOrder(Long orderId) {
+    final Order orderToCancel = getOrderById(orderId);
+
+    validateIfOrderEligibleForCancellation(orderId, orderToCancel);
+
+    markOrderStatus(orderToCancel, OrderStatus.ORDER_CANCELLED, OrderLifecycleEvent.UPDATE);
+
+    final Order cancelledOrder = saveOrder(orderToCancel);
+
+    notificationService.orderCancelled(orderId);
+
+    return OrderMapper.getOrderResponse(cancelledOrder);
+  }
+
+  @Transactional
+  public OrderRequest updateOrder(Long orderId, OrderRequest orderDto) {
+    final Order orderToupdate = getOrderById(orderId);
+    validateOrderCanBeModified(orderId, orderToupdate);
+
+    orderToupdate.setTotalAmount(orderDto.getTotalAmount());
+
+    final Order updated = saveOrder(orderToupdate);
+
+    notificationService.orderUpdated(updated.getId());
+
+    return OrderMapper.getOrderResponse(updated);
+  }
+
+  public OrderResponse getOrderDetails(Long orderId) {
+    final Order orderDetails = getOrderById(orderId);
+    return OrderMapper.getOrderResponse(orderDetails);
+  }
+
+  public Order getOrder(Long orderId) {
+    final Order order = getOrderById(orderId);
+    return order;
+  }
+
+  private void validateOrderCanBeModified(Long orderId, Order orderToupdate) {
+    if (orderToupdate.getStatus() == OrderStatus.ORDER_CANCELLED) {
+      throw new CancelledOrderCannotBeModifiedException(orderId);
     }
 
-    @Transactional
-    public OrderResponse cancelOrder(Long orderId) {
-        final Order orderToCancel = getOrderById(orderId);
-
-        validateIfOrderEligibleForCancellation(orderId, orderToCancel);
-
-        markOrderStatus(orderToCancel, OrderStatus.ORDER_CANCELLED, OrderLifecycleEvent.UPDATE);
-
-        final Order cancelledOrder = saveOrder(orderToCancel);
-
-        notificationService.orderCancelled(orderId);
-
-        return OrderMapper.getOrderResponse(cancelledOrder);
+    if (orderToupdate.getStatus() == OrderStatus.PAYMENT_DONE
+        || orderToupdate.getStatus() == OrderStatus.PAYMENT_FAILED) {
+      throw new OrderCannotBeModifiedException(orderId);
     }
+  }
 
-    @Transactional
-    public OrderRequest updateOrder(
-            Long orderId, 
-            OrderRequest orderDto) {
-        final Order orderToupdate = getOrderById(orderId);
-        validateOrderCanBeModified(orderId, orderToupdate);  
-   
-        orderToupdate.setTotalAmount(orderDto.getTotalAmount());
-        
-        final Order updated = saveOrder(orderToupdate);
-
-        notificationService.orderUpdated(updated.getId());
-        
-        return OrderMapper.getOrderResponse(updated);
+  private void validateIfOrderEligibleForCancellation(Long orderId, Order orderToCancel) {
+    if (orderToCancel.getStatus() == OrderStatus.ORDER_CANCELLED) {
+      throw new OrderAlreadyCancelledException(orderId);
     }
-
-    public OrderResponse getOrderDetails(Long orderId) {
-        final Order orderDetails = getOrderById(orderId);
-        return OrderMapper.getOrderResponse(orderDetails);
+    if (orderToCancel.getStatus() == OrderStatus.PAYMENT_DONE) {
+      throw new OrderCannotBeModifiedException(orderId);
     }
+  }
 
-    public Order getOrder(Long orderId) {
-        final Order order = getOrderById(orderId);
-        return order;
-    }
-    private void validateOrderCanBeModified(Long orderId, Order orderToupdate) {
-        if (orderToupdate.getStatus() == OrderStatus.ORDER_CANCELLED) {
-            throw new CancelledOrderCannotBeModifiedException(orderId);
-        }
+  private Order getOrderById(Long orderId) {
+    final Order order =
+        orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
+    return order;
+  }
 
-        if (orderToupdate.getStatus() == OrderStatus.PAYMENT_DONE
-                || orderToupdate.getStatus() == OrderStatus.PAYMENT_FAILED) {
-            throw new OrderCannotBeModifiedException(orderId);
-        }
-    }
+  public Order saveOrder(Order order) {
+    order.setUpdatedAt(Instant.now());
+    return orderRepository.save(order);
+  }
 
-    private void validateIfOrderEligibleForCancellation(Long orderId, Order orderToCancel) {
-        if (orderToCancel.getStatus() == OrderStatus.ORDER_CANCELLED) {
-            throw new OrderAlreadyCancelledException(orderId);
-        }
-        if (orderToCancel.getStatus() == OrderStatus.PAYMENT_DONE) {
-            throw new OrderCannotBeModifiedException(orderId);
-        }
+  private void markOrderStatus(
+      Order order, OrderStatus orderStatus, OrderLifecycleEvent orderlifecycleEvent) {
+    final Instant now = Instant.now();
+    order.setStatus(orderStatus);
+    if (orderlifecycleEvent == OrderLifecycleEvent.CREATE) {
+      order.setCreatedAt(now);
     }
+    order.setUpdatedAt(now);
+  }
 
-    private Order getOrderById(Long orderId) {
-        final Order order = orderRepository
-                        .findById(orderId)
-                        .orElseThrow(
-                                () -> new OrderNotFoundException(
-                                        orderId));
-        return order;
-    }
+  public List<OrderResponse> getOrders(Long userId) {
+    List<Order> orders =
+        orderRepository.findByUserIdAndStatus(userId.toString(), OrderStatus.CREATED);
+    List<OrderResponse> userOrders = orders.stream().map(OrderMapper::getOrderResponse).toList();
+    return userOrders;
+  }
 
-    public Order saveOrder(Order order) {
-        order.setUpdatedAt(Instant.now());
-        return orderRepository.save(order);
-    }
+  @Transactional
+  public void processOrder(ProcessOrderInput orderInput) {
+    log.info("Processing order {} ", orderInput);
+    Order order = getOrderById(orderInput.orderId());
+    if (order.getStatus() == OrderStatus.CREATED) {
 
-    private void markOrderStatus(Order order, OrderStatus orderStatus, OrderLifecycleEvent orderlifecycleEvent) {
-        final Instant now = Instant.now();
-        order.setStatus(orderStatus);
-        if (orderlifecycleEvent == OrderLifecycleEvent.CREATE) {
-            order.setCreatedAt(now);
-        }
-        order.setUpdatedAt(now);
-    }
+      order.setStatus(OrderStatus.PAYMENT_PENDING);
+      saveOrder(order);
 
-    public List<OrderResponse> getOrders(Long userId) {
-        List<Order> orders = orderRepository
-                                .findByUserIdAndStatus(
-                                            userId.toString(), 
-                                            OrderStatus.CREATED);
-        List<OrderResponse> userOrders = orders.stream()
-                .map(OrderMapper::getOrderResponse).toList();
-        return userOrders;
+      outboxService.savePaymentRequestEvent(
+          new PaymentRequested(orderInput.orderId(), orderInput.paymentMode(), null));
     }
+  }
 
-    @Transactional
-    public void processOrder(ProcessOrderInput orderInput) {
-       log.info("Processing order {} ", orderInput);
-       Order order = getOrderById(orderInput.orderId());
-       if(order.getStatus()==OrderStatus.CREATED) {
-           
-           order.setStatus(OrderStatus.PAYMENT_PENDING);
-           saveOrder(order);
-           
-           outboxService.savePaymentRequestEvent(
-                               new PaymentRequested(
-                                      orderInput.orderId(), 
-                                      orderInput.simulateSuccess(),
-                                      null));
-       }
+  @Transactional
+  public void updateOrderForPayment(Long orderId) {
+    log.info("Updating order for successful payment");
+    Order order = getOrderById(orderId);
+    // order failed status should be remove when direct end 
+    // point hit for payment module will be remove
+    if (order.getStatus() == OrderStatus.PAYMENT_PENDING
+            || order.getStatus() == OrderStatus.PAYMENT_FAILED) { 
+      order.setStatus(OrderStatus.PAYMENT_DONE);
+      saveOrder(order);
+    } else {
+      throw new InvalidOrderStateForPaymentException(orderId);
     }
+  }
 
-    @Transactional
-    public void updateOrderForPayment(Long orderId) {
-        log.info("Updating order for successful payment");
-        Order order = getOrderById(orderId);
-        if(order.getStatus()==OrderStatus.PAYMENT_PENDING) {
-            
-            order.setStatus(OrderStatus.PAYMENT_DONE);
-            saveOrder(order);
-        }else {
-            throw new InvalidOrderStateForPaymentException(orderId);
-        }
+  @Transactional
+  public void markOrderAsFailed(Long orderId) {
+    log.info("Mark order as payment failed");
+    Order order = getOrderById(orderId);
+    if (order.getStatus() == OrderStatus.PAYMENT_PENDING) {
+      order.setStatus(OrderStatus.PAYMENT_FAILED);
+      saveOrder(order);
+    } else {
+      throw new InvalidOrderStateForPaymentException(orderId);
     }
-
-    @Transactional
-    public void markOrderAsFailed(Long orderId) {
-        log.info("Mark order as payment failed");
-        Order order = getOrderById(orderId);
-        if(order.getStatus()==OrderStatus.PAYMENT_PENDING) {
-            order.setStatus(OrderStatus.PAYMENT_FAILED);
-            saveOrder(order);
-        }else {
-            throw new InvalidOrderStateForPaymentException(orderId);
-        }
-    }
+  }
 }

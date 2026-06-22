@@ -16,7 +16,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "product", schema = "catalog")
-
 @Getter
 @Setter
 @Builder
@@ -24,22 +23,22 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Product {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-      
-    @Column(name = "product_name")
-    private String name;
-    
-    @Column(name = "product_description")
-    private String description;
-    
-    @Column(name = "product_price")
-    private Double price;
-    
-    @Column(name = "created_at")
-    private Instant createdAt;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "updated_at")
-    private Instant updatedAt;
+  @Column(name = "product_name")
+  private String name;
+
+  @Column(name = "product_description")
+  private String description;
+
+  @Column(name = "product_price")
+  private Double price;
+
+  @Column(name = "created_at")
+  private Instant createdAt;
+
+  @Column(name = "updated_at")
+  private Instant updatedAt;
 }

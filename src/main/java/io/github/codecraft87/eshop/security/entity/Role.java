@@ -12,21 +12,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(schema = "identity", name="roles")
+@Table(schema = "identity", name = "roles")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Role {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(unique = true, name = "role_name")
-    private String name;
-    
-    public Role(String roleName) {
-        this.name = roleName;
-    }
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(unique = true, name = "role_name")
+  private String name;
+
+  public Role(String roleName) {
+    this.name = roleName;
+  }
 }

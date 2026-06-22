@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BasketOutboxRepository extends JpaRepository<BasketOutboxMessage, Long> {
-    List<BasketOutboxMessage> findByStatusInOrderByCreatedAt(
-        List<OutboxEventStatus> statuses);
+  List<BasketOutboxMessage> findByStatusInOrderByCreatedAt(List<OutboxEventStatus> statuses);
 }

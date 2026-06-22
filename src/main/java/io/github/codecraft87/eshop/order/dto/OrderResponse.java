@@ -10,7 +10,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 public class OrderResponse extends OrderRequest {
-    private Long orderId;
-    private Instant createdAt;
-    private Instant updatedAt;
+  private Long orderId;
+  private Instant createdAt;
+  private Instant updatedAt;
 }

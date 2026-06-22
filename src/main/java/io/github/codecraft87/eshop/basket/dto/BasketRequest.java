@@ -13,11 +13,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BasketRequest {
 
-    public BasketRequest(Long userId) {
-        this.userId = userId;
-    }
-    
-    private Long userId;
-    
-    private List<BasketItemRequest> items;
+  public BasketRequest(Long userId) {
+    this.userId = userId;
+  }
+
+  private Long userId;
+
+  private List<BasketItemRequest> items;
 }

@@ -24,128 +24,126 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PaymentService implements PaymentModuleService {
 
-    private final NotificationModuleService notificationService;
+  private final NotificationModuleService notificationService;
 
-    private final PaymentRepository paymentRepo;
-   
-    private final PaymentOutboxService outboxService;
+  private final PaymentRepository paymentRepo;
 
-    @Transactional
-    public Long processPayment(PaymentRequest paymentRequest) {
-        log.info("Processing payment for order {}", paymentRequest);
-//        validatePaymentRequest(paymentRequest.getOrderId());
+  private final PaymentOutboxService outboxService;
 
-        final Payment paymentToBeProcesed = PaymentMapper.getPaymentEntity(paymentRequest);
+  @Transactional
+  public Long processPayment(PaymentRequest paymentRequest) {
+    log.info("Processing payment for order {}", paymentRequest);
+    //        validatePaymentRequest(paymentRequest.getOrderId());
 
-        if (paymentRequest.isSimulateFailure()) {
-            log.info("Payment failure case");
-            markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderLifecycleEvent.PENDING_PAYMENT);
+    final Payment paymentToBeProcesed = PaymentMapper.getPaymentEntity(paymentRequest);
 
-            Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED);
-            
-            outboxService.savePaymentFailededEvent(paymentRequest.getOrderId());
-            
-            notificationService.paymentFailed(paymentId);
+    if (paymentRequest.isSimulateFailure()) {
+      log.info("Payment failure case");
+      markPaymentStatus(
+          paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED, OrderLifecycleEvent.PENDING_PAYMENT);
 
-            return paymentId;
-        } else {
-            log.info("else block");
-            checkForDuplicatePayment(paymentRequest.getOrderId());
+      Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_FAILED);
 
-            markPaymentStatus(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.PENDING_PAYMENT);
+      outboxService.savePaymentFailededEvent(paymentRequest.getOrderId());
 
-            Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE);
+      notificationService.paymentFailed(paymentId);
 
-            outboxService.savePaymentCompletedEvent(paymentRequest.getOrderId());
-            notificationService.paymentSucceeded(paymentId);
+      return paymentId;
+    } else {
+      log.info("else block");
+      checkForDuplicatePayment(paymentRequest.getOrderId());
 
-            return paymentId;
-        }
+      markPaymentStatus(
+          paymentToBeProcesed, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.PENDING_PAYMENT);
+
+      Long paymentId = completePayment(paymentToBeProcesed, PaymentStatus.PAYMENT_DONE);
+
+      outboxService.savePaymentCompletedEvent(paymentRequest.getOrderId());
+      notificationService.paymentSucceeded(paymentId);
+
+      return paymentId;
     }
+  }
 
-    @Transactional
-    public Long retryPayment(long paymentId) {
-        log.info("Retry payment {} ",paymentId);
-        final Payment paymentToBeRetry = getPaymentById(paymentId);
+  @Transactional
+  public Long retryPayment(long paymentId) {
+    log.info("Retry payment {} ", paymentId);
+    final Payment paymentToBeRetry = getPaymentById(paymentId);
 
-//        validateRePaymentRequest(paymentToBeRetry.getOrderId());
+    //        validateRePaymentRequest(paymentToBeRetry.getOrderId());
 
-        checkForDuplicatePayment(paymentToBeRetry.getOrderId());
+    checkForDuplicatePayment(paymentToBeRetry.getOrderId());
 
-        markPaymentStatus(paymentToBeRetry, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.UPDATE);
-        completePayment(paymentToBeRetry, PaymentStatus.PAYMENT_DONE);
-        outboxService.savePaymentCompletedEvent(paymentToBeRetry.getOrderId());
-        notificationService.paymentSucceeded(paymentId);
+    markPaymentStatus(paymentToBeRetry, PaymentStatus.PAYMENT_DONE, OrderLifecycleEvent.UPDATE);
+    completePayment(paymentToBeRetry, PaymentStatus.PAYMENT_DONE);
+    outboxService.savePaymentCompletedEvent(paymentToBeRetry.getOrderId());
+    notificationService.paymentSucceeded(paymentId);
 
-        return paymentId;
+    return paymentId;
+  }
+
+  public PaymentResponse getPaymentDetails(Long paymentId) {
+    final Payment payment =
+        paymentRepo.findById(paymentId).orElseThrow(() -> new PaymentNotFoundException(paymentId));
+    return PaymentMapper.getPaymentResponse(payment);
+  }
+
+  private Payment getPaymentById(long paymentId) {
+    final Payment paymentToBeRetry =
+        paymentRepo.findById(paymentId).orElseThrow(() -> new PaymentNotFoundException(paymentId));
+    return paymentToBeRetry;
+  }
+
+  private void checkForDuplicatePayment(Long orderId) {
+    if (paymentRepo.existsByOrderIdAndStatus(orderId, PaymentStatus.PAYMENT_DONE)) {
+      throw new DuplicatePaymentException(orderId);
     }
+  }
 
-    public PaymentResponse getPaymentDetails(Long paymentId) {
-        final Payment payment = 
-                paymentRepo.findById(paymentId)
-                .orElseThrow(() -> new PaymentNotFoundException(paymentId));
-        return PaymentMapper.getPaymentResponse(payment);
+  private Long completePayment(Payment paymentToBeProcesed, PaymentStatus paymentStatus) {
+
+    final Payment payment = savePayment(paymentToBeProcesed);
+
+    // updateOrderStatus(payment.getOrderId(), orderStatus);
+    return payment.getId();
+  }
+
+  private Payment savePayment(Payment payment) {
+    payment.setUpdatedAt(Instant.now());
+    Payment savedPayment = paymentRepo.save(payment);
+    return savedPayment;
+  }
+
+  private void markPaymentStatus(
+      Payment paymentToBeProcesed,
+      PaymentStatus paymentStatus,
+      OrderLifecycleEvent isCreateOperation) {
+    final Instant now = Instant.now();
+    paymentToBeProcesed.setStatus(paymentStatus);
+    if (isCreateOperation == OrderLifecycleEvent.PENDING_PAYMENT) {
+      paymentToBeProcesed.setCreatedAt(now);
     }
+    paymentToBeProcesed.setUpdatedAt(now);
+  }
 
-    private Payment getPaymentById(long paymentId) {
-        final Payment paymentToBeRetry = 
-                paymentRepo.findById(paymentId)
-                .orElseThrow(() -> 
-                    new PaymentNotFoundException(paymentId));
-        return paymentToBeRetry;
-    }
+  //    private void validatePaymentRequest(Long orderId) {
+  //        final Order order = orderService.getOrder(orderId);
+  //        log.info("order status {} ",order.getStatus());
+  //        if (order.getStatus() != OrderStatus.PAYMENT_PENDING) {
+  //            throw new InvalidOrderStateForPaymentException(order.getId());
+  //        }
+  //    }
+  //
+  //    private void validateRePaymentRequest(Long orderId) {
+  //        final Order order = orderService.getOrder(orderId);
+  //        if (order.getStatus() != OrderStatus.PAYMENT_FAILED) {
+  //            throw new PaymentCannotBeRetriedException(orderId);
+  //        }
+  //    }
 
-    private void checkForDuplicatePayment(Long orderId) {
-        if (paymentRepo.existsByOrderIdAndStatus(orderId, PaymentStatus.PAYMENT_DONE)) {
-            throw new DuplicatePaymentException(orderId);
-        }
-    }
-
-    private Long completePayment(Payment paymentToBeProcesed, 
-                                 PaymentStatus paymentStatus) {
-
-        final Payment payment = savePayment(paymentToBeProcesed);
-
-       // updateOrderStatus(payment.getOrderId(), orderStatus);
-        return payment.getId();
-    }
-    
-    private Payment savePayment(Payment payment) {
-        payment.setUpdatedAt(Instant.now());
-        Payment savedPayment = paymentRepo.save(payment);
-        return savedPayment;
-        
-    }
-
-    private void markPaymentStatus(Payment paymentToBeProcesed, 
-                                        PaymentStatus paymentStatus,
-                                        OrderLifecycleEvent isCreateOperation) {
-        final Instant now = Instant.now();
-        paymentToBeProcesed.setStatus(paymentStatus);
-        if (isCreateOperation == OrderLifecycleEvent.PENDING_PAYMENT) {
-            paymentToBeProcesed.setCreatedAt(now);
-        }
-        paymentToBeProcesed.setUpdatedAt(now);
-    }
-
-//    private void validatePaymentRequest(Long orderId) {
-//        final Order order = orderService.getOrder(orderId);
-//        log.info("order status {} ",order.getStatus());
-//        if (order.getStatus() != OrderStatus.PAYMENT_PENDING) {
-//            throw new InvalidOrderStateForPaymentException(order.getId());
-//        }
-//    }
-//
-//    private void validateRePaymentRequest(Long orderId) {
-//        final Order order = orderService.getOrder(orderId);
-//        if (order.getStatus() != OrderStatus.PAYMENT_FAILED) {
-//            throw new PaymentCannotBeRetriedException(orderId);
-//        }
-//    }
-
-    /*
-     * private void updateOrderStatus(Long orderId, OrderStatus status) { final
-     * Order order = orderService.getOrder(orderId); order.setStatus(status);
-     * orderService.saveOrder(order); }
-     */
+  /*
+   * private void updateOrderStatus(Long orderId, OrderStatus status) { final
+   * Order order = orderService.getOrder(orderId); order.setStatus(status);
+   * orderService.saveOrder(order); }
+   */
 }

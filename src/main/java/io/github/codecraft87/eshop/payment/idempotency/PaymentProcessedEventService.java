@@ -11,17 +11,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentProcessedEventService {
 
-    private final PaymentProcessedEventRepository processedEventRepository;
-    
-    public boolean checkIfEventIsProcessed(UUID eventId) {
-        return processedEventRepository.existsById(eventId);
-    }
-    
-    public void addProcessedEventEntry(UUID eventId) {
-        PaymentProcessedEvent procssedEvent = 
-                                        new PaymentProcessedEvent();
-        procssedEvent.setEventId(eventId);
-        procssedEvent.setProcessAt(Instant.now());
-        processedEventRepository.save(procssedEvent);
-    }
+  private final PaymentProcessedEventRepository processedEventRepository;
+
+  public boolean checkIfEventIsProcessed(UUID eventId) {
+    return processedEventRepository.existsById(eventId);
+  }
+
+  public void addProcessedEventEntry(UUID eventId) {
+    PaymentProcessedEvent procssedEvent = new PaymentProcessedEvent();
+    procssedEvent.setEventId(eventId);
+    procssedEvent.setProcessAt(Instant.now());
+    processedEventRepository.save(procssedEvent);
+  }
 }

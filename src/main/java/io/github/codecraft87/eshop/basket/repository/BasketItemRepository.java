@@ -6,6 +6,4 @@ import org.springframework.stereotype.Repository;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
 
 @Repository
-public interface BasketItemRepository extends JpaRepository<BasketItem, Long> {
-
-}
+public interface BasketItemRepository extends JpaRepository<BasketItem, Long> {}

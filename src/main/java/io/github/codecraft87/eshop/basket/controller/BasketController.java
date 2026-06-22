@@ -20,36 +20,29 @@ import io.github.codecraft87.eshop.common.dto.OperationResponse;
 @RequestMapping("/basket")
 public class BasketController {
 
-    private BasketService basketService;
+  private BasketService basketService;
 
-    public BasketController(BasketService service){
-        this.basketService = service;
-    }
+  public BasketController(BasketService service) {
+    this.basketService = service;
+  }
 
-    @PutMapping
-    public ResponseEntity<OperationResponse> modifyBasket(
-                                    @RequestBody BasketRequest itemRequest) {
-        long basketId = basketService.saveBasket(itemRequest);
-        return ResponseEntity.ok()
-                             .body(
-                                     new OperationResponse(
-                                             basketId, "Basket Updated"));
-    }
-    
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<BasketResponse>> getBasket(
-                                                @PathVariable Long userId) {
-        List<BasketResponse> basketResponse = basketService
-                                            .getBasketDetails(userId);
-        return ResponseEntity.ok().body(basketResponse);
-    }
+  @PutMapping
+  public ResponseEntity<OperationResponse> modifyBasket(@RequestBody BasketRequest itemRequest) {
+    long basketId = basketService.saveBasket(itemRequest);
+    return ResponseEntity.ok().body(new OperationResponse(basketId, "Basket Updated"));
+  }
 
-    @PostMapping("/checkout")
-    public ResponseEntity<String> checkout(
-                            @RequestBody BasketRequest itemRequest) {
-         
-        basketService.checkout(itemRequest);
-        
-        return ResponseEntity.ok().body("Cart process");
-    }
+  @GetMapping("/{userId}")
+  public ResponseEntity<List<BasketResponse>> getBasket(@PathVariable Long userId) {
+    List<BasketResponse> basketResponse = basketService.getBasketDetails(userId);
+    return ResponseEntity.ok().body(basketResponse);
+  }
+
+  @PostMapping("/checkout")
+  public ResponseEntity<String> checkout(@RequestBody BasketRequest itemRequest) {
+
+    basketService.checkout(itemRequest);
+
+    return ResponseEntity.ok().body("Cart process");
+  }
 }

@@ -15,9 +15,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ProductResponse extends ProductRequest {
 
-    private Long id;
-    
-    private Instant createdAt;
+  private Long id;
 
-    private Instant updatedAt;
+  private Instant createdAt;
+
+  private Instant updatedAt;
 }

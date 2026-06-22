@@ -13,13 +13,13 @@ import lombok.Setter;
 @Builder
 public class BasketResponse {
 
-    private Long productId;
-    
-    private String productName;
-    
-    private String description;
-    
-    private Double price;
-    
-    private Integer quantity;
+  private Long productId;
+
+  private String productName;
+
+  private String description;
+
+  private Double price;
+
+  private Integer quantity;
 }

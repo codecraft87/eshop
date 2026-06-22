@@ -29,33 +29,28 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Basket {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(name = "user_id")
-    private Long userId;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(name = "basket_status")
-    private BasketStatus status;
-    
-    @Column(name = "created_at")
-    private Instant createdAt;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "updated_at")
-    private Instant updatedAt;
-    
-    @OneToMany(mappedBy = "basket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BasketItem> items = new ArrayList<>();
-    
-    public Optional<BasketItem> findItemByProductId(Long itemId) {
+  @Column(name = "user_id")
+  private Long userId;
 
-        return items.stream()
-                .filter( item->
-                    item.getProduct()
-                        .getId()
-                        .equals(itemId))
-                .findFirst();
-    }
+  @Enumerated(EnumType.STRING)
+  @Column(name = "basket_status")
+  private BasketStatus status;
+
+  @Column(name = "created_at")
+  private Instant createdAt;
+
+  @Column(name = "updated_at")
+  private Instant updatedAt;
+
+  @OneToMany(mappedBy = "basket", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<BasketItem> items = new ArrayList<>();
+
+  public Optional<BasketItem> findItemByProductId(Long itemId) {
+
+    return items.stream().filter(item -> item.getProduct().getId().equals(itemId)).findFirst();
+  }
 }

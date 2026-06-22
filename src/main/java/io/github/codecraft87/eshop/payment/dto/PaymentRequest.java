@@ -15,13 +15,12 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class PaymentRequest {
 
-    private Long paymentId;
+  private Long paymentId;
 
-    @NotNull(message = "{order.id.notnull}")
-    private Long orderId;
+  @NotNull(message = "{order.id.notnull}")
+  private Long orderId;
 
-    private PaymentStatus status;
-  
-    private boolean simulateFailure;
+  private PaymentStatus status;
 
+  private boolean simulateFailure;
 }

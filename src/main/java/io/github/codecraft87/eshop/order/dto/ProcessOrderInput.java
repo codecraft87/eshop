@@ -1,6 +1,5 @@
 package io.github.codecraft87.eshop.order.dto;
 
-public record ProcessOrderInput(
-                        Long orderId, 
-                        Boolean simulateSuccess) {
-}
+import io.github.codecraft87.eshop.order.enums.PaymentMode;
+
+public record ProcessOrderInput(Long orderId, PaymentMode paymentMode) {}
