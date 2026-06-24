@@ -13,8 +13,6 @@ import io.github.codecraft87.eshop.common.enums.ErrorEnums;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
- 
-
   @ExceptionHandler(PaymentCannotBeRetriedException.class)
   public ResponseEntity<ErrorResponse> handlePaymentRetryNotAllowed(
       PaymentCannotBeRetriedException ex) {
