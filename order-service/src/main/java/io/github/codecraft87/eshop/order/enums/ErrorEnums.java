@@ -1,0 +1,6 @@
+package io.github.codecraft87.eshop.order.enums;
+
+public enum ErrorEnums {
+  ORDER_NOT_FOUND, ORDER_ALREADY_CANCELLED, ORDER_CANNOT_BE_MODIFIED, CANCELLED_ORDER_CANNOT_BE_MODIFIED, INVALID_ORDER_STATE
+
+}

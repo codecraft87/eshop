@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.payment.messaging.config;
+package io.github.codecraft87.eshop.order.messaging.config;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;
@@ -21,6 +21,16 @@ public class RabbitMQConfig {
   }
 
   @Bean
+  public Queue getOrderBasketCheckoutQueue() {
+    return new Queue(QueueConstants.ORDER_BASKET_CHECKOUT_QUEUE);
+  }
+
+  @Bean
+  public Queue getBasketOrderCreatedQueue() {
+    return new Queue(QueueConstants.BASKET_ORDER_CREATED_QUEUE);
+  }
+
+  @Bean
   public Queue getOrderPaymentRequestedQueue() {
     return new Queue(QueueConstants.PAYMENT_ORDER_PAYMENT_REQUESTED_QUEUE);
   }
@@ -33,6 +43,20 @@ public class RabbitMQConfig {
   @Bean
   public Queue getOrderPaymentFailedQueue() {
     return new Queue(QueueConstants.ORDER_PAYMENT_FAILED_QUEUE);
+  }
+
+  @Bean
+  public Binding bindBasketOrderQueue() {
+    return BindingBuilder.bind(getOrderBasketCheckoutQueue())
+        .to(getEShopExchange())
+        .with(RoutingKeyConstants.BASKET_CHECKOUT);
+  }
+
+  @Bean
+  public Binding bindOrderBasketQueue() {
+    return BindingBuilder.bind(getBasketOrderCreatedQueue())
+        .to(getEShopExchange())
+        .with(RoutingKeyConstants.ORDER_CREATED);
   }
 
   @Bean

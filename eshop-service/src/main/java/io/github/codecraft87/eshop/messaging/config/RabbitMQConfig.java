@@ -31,21 +31,6 @@ public class RabbitMQConfig {
   }
 
   @Bean
-  public Queue getOrderPaymentRequestedQueue() {
-    return new Queue(QueueConstants.PAYMENT_ORDER_PAYMENT_REQUESTED_QUEUE);
-  }
-
-  @Bean
-  public Queue getOrderPaymentCompletedQueue() {
-    return new Queue(QueueConstants.ORDER_PAYMENT_COMPLETED_QUEUE);
-  }
-
-  @Bean
-  public Queue getOrderPaymentFailedQueue() {
-    return new Queue(QueueConstants.ORDER_PAYMENT_FAILED_QUEUE);
-  }
-
-  @Bean
   public Binding bindBasketOrderQueue() {
     return BindingBuilder.bind(getOrderBasketCheckoutQueue())
         .to(getEShopExchange())
@@ -57,27 +42,6 @@ public class RabbitMQConfig {
     return BindingBuilder.bind(getBasketOrderCreatedQueue())
         .to(getEShopExchange())
         .with(RoutingKeyConstants.ORDER_CREATED);
-  }
-
-  @Bean
-  public Binding bindOrderPaymentRequestQueue() {
-    return BindingBuilder.bind(getOrderPaymentRequestedQueue())
-        .to(getEShopExchange())
-        .with(RoutingKeyConstants.ORDER_PAYMENT_REQUESTED);
-  }
-
-  @Bean
-  public Binding bindOrderPaymentCompletedQueue() {
-    return BindingBuilder.bind(getOrderPaymentCompletedQueue())
-        .to(getEShopExchange())
-        .with(RoutingKeyConstants.PAYMENT_COMPLETED);
-  }
-
-  @Bean
-  public Binding bindOrderPaymentFailedQueue() {
-    return BindingBuilder.bind(getOrderPaymentFailedQueue())
-        .to(getEShopExchange())
-        .with(RoutingKeyConstants.PAYMENT_FAILED);
   }
 
   @Bean

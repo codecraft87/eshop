@@ -111,7 +111,7 @@ public class BasketService implements BasketModuleService {
         outboxEvent.getEventId().toString(),
         basket.getId(),
         basket.getUserId(),
-        basket.getItems().stream().map(this::gBasketItemEvent).toList());
+        basket.getItems().stream().map(this::getBasketItemEvent).toList());
   }
 
   private Basket getActiveBasketForUser(BasketRequest basketRequest) {
@@ -201,8 +201,13 @@ public class BasketService implements BasketModuleService {
     basketRepository.save(basket);
   }
 
-  public BasketItemEvent gBasketItemEvent(BasketItem basketItem) {
-    return new BasketItemEvent(basketItem.getProduct().getId(), basketItem.getQuantity());
+  public BasketItemEvent getBasketItemEvent(BasketItem basketItem) {
+
+    return new BasketItemEvent(
+        basketItem.getProduct().getId(),
+        basketItem.getProduct().getName(),
+        basketItem.getProduct().getPrice(),
+        basketItem.getQuantity());
   }
 
   @Transactional
