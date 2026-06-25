@@ -3,7 +3,6 @@ package io.github.codecraft87.eshop.security.service;
 import java.util.HashSet;
 import java.util.List;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.exceptions.GenericException;
@@ -21,12 +20,14 @@ public class UserService {
 
   private final RoleRepository roleRepo;
 
-  private final BCryptPasswordEncoder encoder;
+//  private BCryptPasswordEncoder encoder;
 
-  public UserService(UserRepository repo, RoleRepository roleRepo, BCryptPasswordEncoder encoder) {
+  public UserService(UserRepository repo, RoleRepository roleRepo
+//      , BCryptPasswordEncoder encoder
+      ) {
     this.repo = repo;
     this.roleRepo = roleRepo;
-    this.encoder = encoder;
+//    this.encoder = encoder;
   }
 
   public void saveUser(UserRequest dto) {
@@ -42,7 +43,7 @@ public class UserService {
 
   private void mapDtoToEntityUser(User user, UserRequest userDto) {
     user.setUsername(userDto.getUsername());
-    user.setPassword(encoder.encode(userDto.getPassword()));
+//    user.setPassword(encoder.encode(userDto.getPassword()));
     List<Role> roleList =
         userDto.getRoles().stream()
             .map(

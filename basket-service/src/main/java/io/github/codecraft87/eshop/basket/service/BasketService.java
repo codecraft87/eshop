@@ -192,7 +192,8 @@ public class BasketService implements BasketModuleService {
   }
 
   private ProductSnapshot findProductById(Long productId) {
-    ProductSnapshot product = catalogService.getProduct(productId);
+      log.info("Getting product "+productId);
+    ProductSnapshot product = catalogService.getProductById(productId);
     return product;
   }
 
