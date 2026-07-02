@@ -40,15 +40,15 @@ public class BasketService  {
   private final BasketOutboxService outboxService;
   private final ObjectMapper objectMapper;
 
-  public Long saveBasket(String authorization, BasketRequest basketRequest) {
+  public Long saveBasket(BasketRequest basketRequest) {
       log.info("Basket save");
     Basket activeBasket = getActiveBasketForUser(basketRequest);
 
     if (activeBasket == null) {
       activeBasket = new Basket();
-      addItemsToBasket(activeBasket, authorization, basketRequest);
+      addItemsToBasket(activeBasket, basketRequest);
     } else {
-      updateBasket(activeBasket, authorization, basketRequest);
+      updateBasket(activeBasket, basketRequest);
     }
     return activeBasket.getId();
   }
@@ -117,9 +117,9 @@ public class BasketService  {
     return basket;
   }
 
-  private void addItemsToBasket(Basket basket, String authorization, BasketRequest basketRequest) {
+  private void addItemsToBasket(Basket basket, BasketRequest basketRequest) {
       log.info("add to basket");
-    List<BasketItem> basketItems = getBasketItemsFromRequest(basket, authorization, basketRequest);
+    List<BasketItem> basketItems = getBasketItemsFromRequest(basket, basketRequest);
 
     basket.setItems(basketItems);
     basket.setUserId(basketRequest.getUserId());
@@ -129,11 +129,11 @@ public class BasketService  {
     saveBasket(basket);
   }
 
-  private List<BasketItem> getBasketItemsFromRequest(Basket basket, String authorization, BasketRequest basketRequest) {
+  private List<BasketItem> getBasketItemsFromRequest(Basket basket, BasketRequest basketRequest) {
     List<BasketItem> basketItems = new ArrayList<BasketItem>();
 
     for (BasketItemRequest item : basketRequest.getItems()) {
-      ProductSnapshot product = findProductById(authorization, item.getProductId());
+      ProductSnapshot product = findProductById(item.getProductId());
       BasketItem basketItem = new BasketItem();
       basketItem.setBasket(basket);
       basketItem.setProductId(product.productId());
@@ -145,7 +145,7 @@ public class BasketService  {
     return basketItems;
   }
 
-  private void updateBasket(Basket basket, String authorization, BasketRequest basketRequest) {
+  private void updateBasket(Basket basket, BasketRequest basketRequest) {
     for (BasketItemRequest itemDto : basketRequest.getItems()) {
       if (itemDto.getQuantity() <= 0) {
 
@@ -163,7 +163,7 @@ public class BasketService  {
       } else {
         BasketItem basketItem = new BasketItem();
         basketItem.setBasket(basket);
-        ProductSnapshot product = findProductById(authorization, itemDto.getProductId());
+        ProductSnapshot product = findProductById(itemDto.getProductId());
         basketItem.setProductId(product.productId());
         basketItem.setProductName(product.productName());
         basketItem.setUnitPrice(product.unitPrice());
@@ -192,9 +192,9 @@ public class BasketService  {
     basket.getItems().removeIf(item -> item.getProductId().equals(itemDto.getProductId()));
   }
 
-  private ProductSnapshot findProductById(String authorization, Long productId) {
+  private ProductSnapshot findProductById(Long productId) {
     log.info("Getting product "+productId);
-    ProductSnapshot product = catalogService.getProductById(authorization, productId);
+    ProductSnapshot product = catalogService.getProductById(productId);
     return product;
   }
 

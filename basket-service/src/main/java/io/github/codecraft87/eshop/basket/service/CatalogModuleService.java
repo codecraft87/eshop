@@ -4,7 +4,7 @@ import io.github.codecraft87.eshop.basket.dto.ProductSnapshot;
 
 public interface CatalogModuleService {
 
-  ProductSnapshot getProductById(String authorization, Long productId);
+  ProductSnapshot getProductById(Long productId);
   
   
 }

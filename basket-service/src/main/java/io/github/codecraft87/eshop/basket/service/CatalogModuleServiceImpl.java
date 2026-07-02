@@ -16,10 +16,10 @@ public class CatalogModuleServiceImpl implements CatalogModuleService {
   private final CatalogClient catalogClient;
     
   @Override 
-  public ProductSnapshot getProductById(String authorization, Long productId) {
+  public ProductSnapshot getProductById(Long productId) {
       log.info("Getting product by id {}", productId);
       try {
-          ProductResponse product = catalogClient.getProductById(authorization, productId);
+          ProductResponse product = catalogClient.getProductById(productId);
           return new ProductSnapshot(product.getId(), product.getName(), product.getPrice());
       }catch (Exception e) {
           log.info("Error {} ", e.getMessage());
