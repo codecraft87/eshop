@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,9 +16,11 @@ import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.dto.OperationResponse;
 import io.github.codecraft87.eshop.basket.service.BasketService;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/basket")
+@Slf4j
 public class BasketController {
 
   private BasketService basketService;
@@ -27,8 +30,11 @@ public class BasketController {
   }
 
   @PutMapping
-  public ResponseEntity<OperationResponse> modifyBasket(@RequestBody BasketRequest itemRequest) {
-    long basketId = basketService.saveBasket(itemRequest);
+  public ResponseEntity<OperationResponse> modifyBasket(
+      @RequestBody BasketRequest itemRequest,
+      @RequestHeader("Authorization") String authorization 
+      ) {
+    long basketId = basketService.saveBasket(authorization, itemRequest);
     return ResponseEntity.ok().body(new OperationResponse(basketId, "Basket Updated"));
   }
 

@@ -12,7 +12,6 @@ import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.mapper.ProductMapper;
 import io.github.codecraft87.eshop.catalog.repository.ProductRepository;
 import io.github.codecraft87.eshop.exceptions.ProductNotFoundException;
-import io.github.codecraft87.eshop.notification.service.NotificationModuleService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class ProductService implements CatalogModuleService {
 
-  private final NotificationModuleService notificationService;
   private final ProductRepository catalogRepository;
 
   @Transactional
@@ -29,7 +27,6 @@ public class ProductService implements CatalogModuleService {
     product.setCreatedAt(Instant.now());
     Long productId = saveProduct(product).getId();
 
-    notificationService.productCreated(productId);
     return productId;
   }
 
@@ -55,7 +52,6 @@ public class ProductService implements CatalogModuleService {
     productToUpdate.setPrice(productRequest.getPrice());
 
     final Product updatedProduct = saveProduct(productToUpdate);
-    notificationService.productUpdated(updatedProduct.getId());
     return ProductMapper.getProductResponse(updatedProduct);
   }
 
@@ -63,8 +59,6 @@ public class ProductService implements CatalogModuleService {
   public Long deleteProduct(Long productId) {
     final Product productToBeDeleted = getProduct(productId);
     catalogRepository.delete(productToBeDeleted);
-
-    notificationService.productDeleted(productId);
 
     return productId;
   }

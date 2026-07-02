@@ -3,6 +3,7 @@ package io.github.codecraft87.eshop.security.service;
 import java.util.HashSet;
 import java.util.List;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.exceptions.GenericException;
@@ -12,40 +13,34 @@ import io.github.codecraft87.eshop.security.entity.Role;
 import io.github.codecraft87.eshop.security.entity.User;
 import io.github.codecraft87.eshop.security.repository.RoleRepository;
 import io.github.codecraft87.eshop.security.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-  private final UserRepository repo;
+  private final UserRepository userRepo;
 
   private final RoleRepository roleRepo;
 
-//  private BCryptPasswordEncoder encoder;
+  private final BCryptPasswordEncoder encoder;
 
-  public UserService(UserRepository repo, RoleRepository roleRepo
-//      , BCryptPasswordEncoder encoder
-      ) {
-    this.repo = repo;
-    this.roleRepo = roleRepo;
-//    this.encoder = encoder;
-  }
-
-  public void saveUser(UserRequest dto) {
-    User user = new User();
-    mapDtoToEntityUser(user, dto);
-    User checkUser = repo.findByUsername(user.getUsername());
+  public void saveUser(UserRequest userRequest) {
+    User user = toEntityUser(userRequest);
+    User checkUser = userRepo.findByUsername(user.getUsername());
     if (checkUser != null) {
       throw new GenericException(
           "Registration Failed: User [" + user.getUsername() + "], already exists.");
     }
-    repo.save(user);
+    userRepo.save(user);
   }
 
-  private void mapDtoToEntityUser(User user, UserRequest userDto) {
-    user.setUsername(userDto.getUsername());
-//    user.setPassword(encoder.encode(userDto.getPassword()));
+  private User toEntityUser(UserRequest userRequest) {
+    User user = new User();
+    user.setUsername(userRequest.username());
+    user.setPassword(encoder.encode(userRequest.password()));
     List<Role> roleList =
-        userDto.getRoles().stream()
+        userRequest.roles().stream()
             .map(
                 role ->
                     roleRepo
@@ -53,5 +48,6 @@ public class UserService {
                         .orElseThrow(() -> new ResourceNotFoundException("Role not found " + role)))
             .toList();
     user.setRoles(new HashSet<Role>(roleList));
+    return user;
   }
 }

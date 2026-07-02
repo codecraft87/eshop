@@ -1,9 +1,15 @@
 package io.github.codecraft87.eshop.security.dto;
 
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import io.github.codecraft87.eshop.security.entity.User;
+import org.jspecify.annotations.Nullable;
 
-public class UserPrinicipal {
+public class UserPrinicipal implements UserDetails {
 
   private static final long serialVersionUID = 1L;
 
@@ -13,20 +19,20 @@ public class UserPrinicipal {
     this.user = user;
   }
 
-//  @Override
-//  public Collection<? extends GrantedAuthority> getAuthorities() {
-//    return user.getRoles().stream()
-//        .map(role -> new SimpleGrantedAuthority(role.getName()))
-//        .toList();
-//  }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return user.getRoles().stream()
+        .map(role -> new SimpleGrantedAuthority(role.getName()))
+        .toList();
+  }
 
-//  @Override
-//  public @Nullable String getPassword() {
-//    return user.getPassword();
-//  }
-//
-//  @Override
-//  public String getUsername() {
-//    return user.getUsername();
-//  }
+  @Override
+  public @Nullable String getPassword() {
+    return user.getPassword();
+  }
+
+  @Override
+  public String getUsername() {
+    return user.getUsername();
+  }
 }

@@ -33,21 +33,22 @@ import tools.jackson.databind.ObjectMapper;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class BasketService implements BasketModuleService {
+public class BasketService  {
 
   private final BasketRepository basketRepository;
   private final CatalogModuleService catalogService;
   private final BasketOutboxService outboxService;
   private final ObjectMapper objectMapper;
 
-  public Long saveBasket(BasketRequest basketRequest) {
+  public Long saveBasket(String authorization, BasketRequest basketRequest) {
+      log.info("Basket save");
     Basket activeBasket = getActiveBasketForUser(basketRequest);
 
     if (activeBasket == null) {
       activeBasket = new Basket();
-      addItemsToBasket(activeBasket, basketRequest);
+      addItemsToBasket(activeBasket, authorization, basketRequest);
     } else {
-      updateBasket(activeBasket, basketRequest);
+      updateBasket(activeBasket, authorization, basketRequest);
     }
     return activeBasket.getId();
   }
@@ -116,9 +117,9 @@ public class BasketService implements BasketModuleService {
     return basket;
   }
 
-  private void addItemsToBasket(Basket basket, BasketRequest basketRequest) {
-
-    List<BasketItem> basketItems = getBasketItemsFromRequest(basket, basketRequest);
+  private void addItemsToBasket(Basket basket, String authorization, BasketRequest basketRequest) {
+      log.info("add to basket");
+    List<BasketItem> basketItems = getBasketItemsFromRequest(basket, authorization, basketRequest);
 
     basket.setItems(basketItems);
     basket.setUserId(basketRequest.getUserId());
@@ -128,11 +129,11 @@ public class BasketService implements BasketModuleService {
     saveBasket(basket);
   }
 
-  private List<BasketItem> getBasketItemsFromRequest(Basket basket, BasketRequest basketRequest) {
+  private List<BasketItem> getBasketItemsFromRequest(Basket basket, String authorization, BasketRequest basketRequest) {
     List<BasketItem> basketItems = new ArrayList<BasketItem>();
 
     for (BasketItemRequest item : basketRequest.getItems()) {
-      ProductSnapshot product = findProductById(item.getProductId());
+      ProductSnapshot product = findProductById(authorization, item.getProductId());
       BasketItem basketItem = new BasketItem();
       basketItem.setBasket(basket);
       basketItem.setProductId(product.productId());
@@ -144,8 +145,7 @@ public class BasketService implements BasketModuleService {
     return basketItems;
   }
 
-  private void updateBasket(Basket basket, BasketRequest basketRequest) {
-
+  private void updateBasket(Basket basket, String authorization, BasketRequest basketRequest) {
     for (BasketItemRequest itemDto : basketRequest.getItems()) {
       if (itemDto.getQuantity() <= 0) {
 
@@ -155,6 +155,7 @@ public class BasketService implements BasketModuleService {
       }
       Optional<BasketItem> optionalbasketItem = basket.findItemByProductId(itemDto.getProductId());
       if (optionalbasketItem.isPresent()) {
+          log.info("is present");
         BasketItem basketItem = optionalbasketItem.get();
         if (itemDto.getQuantity() > 0 && !basketItem.getQuantity().equals(itemDto.getQuantity())) {
           basketItem.setQuantity(itemDto.getQuantity());
@@ -162,7 +163,7 @@ public class BasketService implements BasketModuleService {
       } else {
         BasketItem basketItem = new BasketItem();
         basketItem.setBasket(basket);
-        ProductSnapshot product = findProductById(itemDto.getProductId());
+        ProductSnapshot product = findProductById(authorization, itemDto.getProductId());
         basketItem.setProductId(product.productId());
         basketItem.setProductName(product.productName());
         basketItem.setUnitPrice(product.unitPrice());
@@ -191,9 +192,9 @@ public class BasketService implements BasketModuleService {
     basket.getItems().removeIf(item -> item.getProductId().equals(itemDto.getProductId()));
   }
 
-  private ProductSnapshot findProductById(Long productId) {
-      log.info("Getting product "+productId);
-    ProductSnapshot product = catalogService.getProductById(productId);
+  private ProductSnapshot findProductById(String authorization, Long productId) {
+    log.info("Getting product "+productId);
+    ProductSnapshot product = catalogService.getProductById(authorization, productId);
     return product;
   }
 

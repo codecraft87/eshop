@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(schema = "identity", name = "users")
+@Table(name = "users", schema = "catalog")
 @NoArgsConstructor
 @Getter
 @Setter
@@ -36,7 +36,7 @@ public class User {
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-      schema = "identity",
+      schema = "catalog",
       name = "user_roles",
       joinColumns = @JoinColumn(name = "user_id"),
       inverseJoinColumns = @JoinColumn(name = "role_id"))

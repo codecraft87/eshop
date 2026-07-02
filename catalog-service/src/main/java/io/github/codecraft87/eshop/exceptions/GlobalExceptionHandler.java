@@ -13,19 +13,6 @@ import io.github.codecraft87.eshop.common.enums.ErrorEnums;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(PaymentCannotBeRetriedException.class)
-  public ResponseEntity<ErrorResponse> handlePaymentRetryNotAllowed(
-      PaymentCannotBeRetriedException ex) {
-
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(
-            new ErrorResponse(
-                ErrorEnums.PAYMENT_CANNOT_BE_RETRIED,
-                HttpStatus.BAD_REQUEST.value(),
-                ex.getMessage(),
-                Instant.now()));
-  }
-
   @ExceptionHandler(ProductNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleProductNotFoundForPaymentException(
       ProductNotFoundException ex) {
@@ -39,18 +26,6 @@ public class GlobalExceptionHandler {
                 Instant.now()));
   }
 
-  @ExceptionHandler(PaymentCannotBeCancelledException.class)
-  public ResponseEntity<ErrorResponse> handlePaymentCannotBeCancelled(
-      PaymentCannotBeCancelledException ex) {
-
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(
-            new ErrorResponse(
-                ErrorEnums.PAYMENT_CANNOT_BE_CANCELLED,
-                HttpStatus.BAD_REQUEST.value(),
-                ex.getMessage(),
-                Instant.now()));
-  }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {

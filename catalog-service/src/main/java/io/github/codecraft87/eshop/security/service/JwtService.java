@@ -10,6 +10,7 @@ import java.util.function.Function;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -19,8 +20,6 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
-  //    private final SecretKey key =
-  //            Keys.hmacShaKeyFor("maheshkatoresecretkeywithnosecretinsidekungfublast".getBytes());
   private final String SECRET_KEY;
 
   public JwtService() {
@@ -68,10 +67,10 @@ public class JwtService {
     return Jwts.parser().verifyWith(generateKey()).build().parseSignedClaims(token).getPayload();
   }
 
-//  public boolean validateToken(String token, UserDetails userDetails) {
-//    final String userName = extractUserName(token);
-//    return userName.equals(userDetails.getUsername()) && !istokenExpired(token);
-//  }
+  public boolean validateToken(String token, UserDetails userDetails) {
+    final String userName = extractUserName(token);
+    return userName.equals(userDetails.getUsername()) && !istokenExpired(token);
+  }
 
   private boolean istokenExpired(String token) {
     return extractExpiration(token).before(new Date());
