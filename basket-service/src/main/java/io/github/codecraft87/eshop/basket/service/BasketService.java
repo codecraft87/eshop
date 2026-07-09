@@ -50,6 +50,7 @@ public class BasketService  {
     } else {
       updateBasket(activeBasket, basketRequest);
     }
+    log.info("Basked updated "+activeBasket.getId());
     return activeBasket.getId();
   }
 
@@ -133,6 +134,7 @@ public class BasketService  {
     List<BasketItem> basketItems = new ArrayList<BasketItem>();
 
     for (BasketItemRequest item : basketRequest.getItems()) {
+
       ProductSnapshot product = findProductById(item.getProductId());
       BasketItem basketItem = new BasketItem();
       basketItem.setBasket(basket);
@@ -141,6 +143,7 @@ public class BasketService  {
       basketItem.setUnitPrice(product.unitPrice());
       basketItem.setQuantity(item.getQuantity());
       basketItems.add(basketItem);
+     
     }
     return basketItems;
   }
@@ -193,8 +196,9 @@ public class BasketService  {
   }
 
   private ProductSnapshot findProductById(Long productId) {
-    log.info("Getting product "+productId);
+      log.info("calling catalog for product {}",productId);
     ProductSnapshot product = catalogService.getProductById(productId);
+    log.info("Catalog responded {}",productId);
     return product;
   }
 

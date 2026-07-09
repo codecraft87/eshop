@@ -17,11 +17,11 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleProductNotFoundForPaymentException(
       ProductNotFoundException ex) {
 
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(
             new ErrorResponse(
                 ErrorEnums.PRODUCT_NOT_FOUND,
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.NOT_FOUND.value(),
                 ex.getMessage(),
                 Instant.now()));
   }

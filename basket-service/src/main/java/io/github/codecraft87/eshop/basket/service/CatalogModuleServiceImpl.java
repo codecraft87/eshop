@@ -14,17 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 public class CatalogModuleServiceImpl implements CatalogModuleService {
 
   private final CatalogClient catalogClient;
-    
-  @Override 
+
+  @Override
   public ProductSnapshot getProductById(Long productId) {
-      log.info("Getting product by id {}", productId);
-      try {
-          ProductResponse product = catalogClient.getProductById(productId);
-          return new ProductSnapshot(product.getId(), product.getName(), product.getPrice());
-      }catch (Exception e) {
-          log.info("Error {} ", e.getMessage());
-          log.error("Error trace", e);
-      }
-      return null;
+    ProductResponse productResponse = catalogClient.getProductById(productId);
+    return new ProductSnapshot(
+        productResponse.getId(), productResponse.getName(), productResponse.getPrice());
   }
 }

@@ -17,7 +17,9 @@ import io.github.codecraft87.eshop.catalog.dto.ProductRequest;
 import io.github.codecraft87.eshop.catalog.dto.ProductResponse;
 import io.github.codecraft87.eshop.catalog.service.ProductService;
 import io.github.codecraft87.eshop.common.dto.OperationResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -48,7 +50,8 @@ public class ProductController {
 
   @GetMapping("/{productId}")
   public ResponseEntity<ProductResponse> getProduct(@PathVariable("productId") Long pid) {
-    return ResponseEntity.ok().body(productService.getProductDetails(pid));
+    ProductResponse product = productService.getProductDetails(pid);
+    return ResponseEntity.ok().body(product);
   }
 
   @PutMapping("/{productId}")
