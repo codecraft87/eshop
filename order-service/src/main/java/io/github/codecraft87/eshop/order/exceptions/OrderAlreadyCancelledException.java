@@ -1,9 +1,28 @@
 package io.github.codecraft87.eshop.order.exceptions;
 
-public class OrderAlreadyCancelledException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+import io.github.codecraft87.eshop.order.enums.ErrorEnums;
+
+public class OrderAlreadyCancelledException extends OrderException {
   private static final long serialVersionUID = 1L;
 
   public OrderAlreadyCancelledException(Long orderId) {
-    super("Order [" + orderId + "] is already cancelled ");
+    this.id = orderId.toString();
+  }
+
+  @Override
+  protected String getErrorMessage() {
+    return String.format(ErrorEnums.ORDER_ALREADY_CANCELLED.getErrorMessage(), this.id);
+  }
+
+  @Override
+  public HttpStatus geHttpStatus() {
+    return HttpStatus.BAD_REQUEST;
+  }
+
+  @Override
+  public String getErrorCode() {
+    return ErrorEnums.ORDER_ALREADY_CANCELLED.getErrorCode();
   }
 }

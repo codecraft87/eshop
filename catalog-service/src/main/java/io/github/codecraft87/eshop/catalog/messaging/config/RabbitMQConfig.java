@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.messaging.config;
+package io.github.codecraft87.eshop.catalog.messaging.config;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;

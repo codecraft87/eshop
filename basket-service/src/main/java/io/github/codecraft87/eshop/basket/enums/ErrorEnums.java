@@ -9,8 +9,9 @@ public enum ErrorEnums {
       "CATALOG_SERVICE_ERROR",
       "Catalog service encountered an unexpected error. Please try again later."),
   CATALOG_SERVICE_CLIENT_ERROR(
-  "CATALOG_SERVICE_CLIENT_ERROR",
-  "Catalog service rejected the request.");
+      "CATALOG_SERVICE_CLIENT_ERROR",
+      "Catalog service rejected the request."),
+  DB_NOT_AVAILABLE("DB_NOT_AVAILABLE", "Database is currently unavailable. Please try again later.");
 
   private final String errorCode;
 

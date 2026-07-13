@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.order.exceptions;
+package io.github.codecraft87.eshop.security.exception;
 
 import java.time.Instant;
 
@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ErrorResponse {
 
-  private String errorCode;
-  private int status;
-  private String message;
-  private Instant timestamp;
+    private String errorCode;
+    private int status;
+    private String message;
+    private Instant timestamp;
 }

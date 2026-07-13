@@ -31,24 +31,21 @@ public class BasketCheckedOutEventConsumer {
   @RabbitListener(queues = QueueConstants.ORDER_BASKET_CHECKOUT_QUEUE)
   public void handleBasketCheckedOutEvent(String payload) {
 
-    BasketCheckedOutEvent checkedOutEvent =
-        objectMapper.readValue(payload, BasketCheckedOutEvent.class);
+    BasketCheckedOutEvent checkedOutEvent = objectMapper.readValue(payload, BasketCheckedOutEvent.class);
     if (null != checkedOutEvent) {
-      log.info("Received BasketCheckedOutEvent for basket {} " + checkedOutEvent.basketId());
+
       UUID eventId = UUID.fromString(checkedOutEvent.eventId());
+      log.info("Received basket checkout event {} ", eventId);
       if (processedEventService.checkIfEventIsProcessed(eventId)) {
-        log.info("Duplicate event {} ignored", eventId);
+        log.warn("Duplicate event {} ignored", eventId);
         return;
       }
       createOrder(checkedOutEvent);
-      log.info("Order created");
       processedEventService.addProcessedEventEntry(eventId);
-      log.info("adding event to processed event");
       orderOutboxEventService.saveOrderCreatedEvent(
           new OrderCreated(checkedOutEvent.basketId(), checkedOutEvent.userId(), null));
-      log.info("saving event for order created");
     } else {
-      log.info("Event is null");
+      log.warn("Event is null");
     }
   }
 
@@ -57,20 +54,18 @@ public class BasketCheckedOutEventConsumer {
     request.setUserId(checkedOutEvent.userId().toString());
     request.setOrderItems(checkedOutEvent.items().stream().map(this::getOrderItemDTO).toList());
 
-    Double totalAmount =
-        request.getOrderItems().stream()
-            .mapToDouble(item -> item.getPrice() * item.getQuantity())
-            .sum();
+    Double totalAmount = request.getOrderItems().stream()
+        .mapToDouble(item -> item.getPrice() * item.getQuantity())
+        .sum();
     request.setTotalAmount(totalAmount);
     orderService.createOrder(request);
   }
 
   private OrderItemRequest getOrderItemDTO(BasketItemEvent basketItem) {
-    OrderItemRequest orderItem =
-        OrderItemRequest.builder()
-            .productId(basketItem.productId())
-            .quantity(basketItem.quantity())
-            .build();
+    OrderItemRequest orderItem = OrderItemRequest.builder()
+        .productId(basketItem.productId())
+        .quantity(basketItem.quantity())
+        .build();
 
     orderItem.setProductName(basketItem.productName());
     orderItem.setPrice(basketItem.price());

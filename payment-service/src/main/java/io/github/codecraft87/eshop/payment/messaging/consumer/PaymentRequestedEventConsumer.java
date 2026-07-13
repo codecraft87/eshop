@@ -24,18 +24,17 @@ public class PaymentRequestedEventConsumer {
   private final ObjectMapper objectMapper;
 
   private final PaymentProcessedEventService paymentProcessedEventService;
-  
+
   @RabbitListener(queues = QueueConstants.PAYMENT_ORDER_PAYMENT_REQUESTED_QUEUE)
   public void handlePaymentRequested(String payload) {
     log.info("Received Order payment requested ");
     PaymentRequested paymentRequested = objectMapper.readValue(payload, PaymentRequested.class);
-    log.info("payload {} " + paymentRequested);
 
     if (paymentRequested != null) {
       UUID eventId = UUID.fromString(paymentRequested.eventId());
-      if(paymentProcessedEventService.checkIfEventIsProcessed(eventId)) {
-          log.info("Duplicate event {} ignored ", eventId);
-          return;
+      if (paymentProcessedEventService.checkIfEventIsProcessed(eventId)) {
+        log.warn("Duplicate event {} ignored ", eventId);
+        return;
       }
       PaymentRequest request = new PaymentRequest();
       request.setOrderId(paymentRequested.orderId());

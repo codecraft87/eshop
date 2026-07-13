@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.common.dto;
+package io.github.codecraft87.eshop.catalog.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

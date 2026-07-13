@@ -39,8 +39,9 @@ public class OrderController {
   }
 
   @PostMapping
-  public ResponseEntity<io.github.codecraft87.eshop.order.dto.OperationResponse> createOrder(
+  public ResponseEntity<OperationResponse> createOrder(
       @Valid @RequestBody OrderRequest orderRequest) {
+    log.info("Create order request recieved");
     final Long orderId = orderService.createOrder(orderRequest);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(new OperationResponse(orderId, "Order Created"));
@@ -48,16 +49,19 @@ public class OrderController {
 
   @GetMapping("/{orderId}")
   public ResponseEntity<OrderResponse> retrieveOrderDetails(@PathVariable("orderId") Long orderId) {
+    log.info("Retrieve order details request received");
     return ResponseEntity.ok().body(orderService.getOrderDetails(orderId));
   }
 
   @GetMapping("/user/{userId}")
   public ResponseEntity<List<OrderResponse>> getOrders(@PathVariable("userId") Long userId) {
+    log.info("Get all order for user request received ");
     return ResponseEntity.ok().body(orderService.getOrders(userId));
   }
 
   @PutMapping("/{orderId}/cancel")
   public ResponseEntity<OperationResponse> cancelOrder(@PathVariable("orderId") Long orderId) {
+    log.info("Order cancellation request received ");
     OrderResponse cancelledOrder = orderService.cancelOrder(orderId);
     return ResponseEntity.ok()
         .body(new OperationResponse(cancelledOrder.getOrderId(), "Order Cancelled"));
@@ -66,6 +70,7 @@ public class OrderController {
   @PutMapping("/{orderId}")
   public ResponseEntity<OrderRequest> updateOrder(
       @PathVariable("orderId") Long orderId, @RequestBody OrderRequest orderDto) {
+    log.info("Modification of order request received");
     OrderRequest updatedOrder = orderService.updateOrder(orderId, orderDto);
     return ResponseEntity.ok().body(updatedOrder);
   }
@@ -74,7 +79,7 @@ public class OrderController {
   public ResponseEntity<String> processOrder(
       @PathVariable("orderId") Long orderId,
       @RequestParam(defaultValue = "SIMULATED_SUCCESS") PaymentMode paymentMode) {
-
+    log.info("Request for processing order received");
     log.info("Processing order " + orderId);
     orderService.processOrder(new ProcessOrderInput(orderId, paymentMode));
     return ResponseEntity.ok("Order procssed");

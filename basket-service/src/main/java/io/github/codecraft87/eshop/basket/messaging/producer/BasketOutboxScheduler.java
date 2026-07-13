@@ -14,7 +14,6 @@ public class BasketOutboxScheduler {
 
   @Scheduled(fixedDelay = 5000)
   public void publishEvents() {
-
     outboxService.publishPendingEvents();
   }
 }

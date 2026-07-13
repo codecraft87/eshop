@@ -15,7 +15,9 @@ import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.dto.OperationResponse;
 import io.github.codecraft87.eshop.basket.service.BasketService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/basket")
 public class BasketController {
@@ -29,21 +31,22 @@ public class BasketController {
   @PutMapping
   public ResponseEntity<OperationResponse> modifyBasket(
       @RequestBody BasketRequest itemRequest) {
+    log.info("Modify basket request recieved for user {}", itemRequest.getUserId());
     long basketId = basketService.saveBasket(itemRequest);
     return ResponseEntity.ok().body(new OperationResponse(basketId, "Basket Updated"));
   }
 
   @GetMapping("/{userId}")
   public ResponseEntity<List<BasketResponse>> getBasket(@PathVariable Long userId) {
+    log.info("Getting basket details for user {}", userId);
     List<BasketResponse> basketResponse = basketService.getBasketDetails(userId);
     return ResponseEntity.ok().body(basketResponse);
   }
 
   @PostMapping("/checkout")
   public ResponseEntity<String> checkout(@RequestBody BasketRequest itemRequest) {
-
+    log.info("Checkout request received for basket for user {}", itemRequest.getUserId());
     basketService.checkout(itemRequest);
-
     return ResponseEntity.ok().body("Cart process");
   }
 }

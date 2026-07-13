@@ -34,7 +34,6 @@ public class PaymentOutboxService {
   }
 
   private PaymentOutboxMessage buildPaymentCompletedMessageEntity(Long orderId) {
-    log.info("Build outbox message");
     PaymentOutboxMessage outboxMessage = new PaymentOutboxMessage();
     outboxMessage.setEventId(UUID.randomUUID());
     outboxMessage.setEventType(PaymentEventType.PAYMENT_DONE);
@@ -61,7 +60,6 @@ public class PaymentOutboxService {
   }
 
   private PaymentOutboxMessage buildPaymentFailedMessage(Long orderId) {
-    log.info("Build outbox message");
     PaymentOutboxMessage outboxMessage = new PaymentOutboxMessage();
     outboxMessage.setEventId(UUID.randomUUID());
     outboxMessage.setEventType(PaymentEventType.PAYMENT_FAILED);
@@ -83,11 +81,11 @@ public class PaymentOutboxService {
 
   public void publishPendingEvents() {
 
-    List<PaymentOutboxMessage> events =
-        outboxRepository.findByStatusInOrderByCreatedAt(
-            List.of(PaymentEventStatus.NEW, PaymentEventStatus.FAILED));
-    
-    if (events.size() > 0) log.info("Pending payment events to publish {} ", events.size());
+    List<PaymentOutboxMessage> events = outboxRepository.findByStatusInOrderByCreatedAt(
+        List.of(PaymentEventStatus.NEW, PaymentEventStatus.FAILED));
+
+    if (events.size() > 0)
+      log.info("Pending payment events to publish {} ", events.size());
     for (PaymentOutboxMessage event : events) {
       try {
         switch (event.getEventType()) {
@@ -114,13 +112,11 @@ public class PaymentOutboxService {
   }
 
   private void publishPaymentFailedEvent(String payload) {
-    log.info("Publishing order created event ");
     rabbitTemplate.convertAndSend(
         ExchangeConstants.ESHOP_EXCHANGE, RoutingKeyConstants.PAYMENT_FAILED, payload);
   }
 
   private void publishPaymentDoneEvent(String payload) {
-    log.info("Publishing order created event ");
     rabbitTemplate.convertAndSend(
         ExchangeConstants.ESHOP_EXCHANGE, RoutingKeyConstants.PAYMENT_COMPLETED, payload);
   }

@@ -33,12 +33,12 @@ public class BasketEventConsumer {
     if (createdEvent != null) {
       UUID eventId = UUID.fromString(createdEvent.eventId());
       if (processedEventService.checkIfEventIsProcessed(eventId)) {
-        log.info("Duplicate event {} ignored ", eventId);
+        log.warn("Duplicate event {} ignored ", eventId);
         return;
       }
       basketService.updateBasketForOrder(createdEvent.basketId());
       processedEventService.addProcessedEventEntry(eventId);
     }
-    log.info("Basket updated for status");
+    log.info("Basket checkout process completed");
   }
 }

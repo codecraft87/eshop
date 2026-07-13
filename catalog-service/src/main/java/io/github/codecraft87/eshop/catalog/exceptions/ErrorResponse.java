@@ -1,8 +1,7 @@
-package io.github.codecraft87.eshop.exceptions;
+package io.github.codecraft87.eshop.catalog.exceptions;
 
 import java.time.Instant;
 
-import io.github.codecraft87.eshop.common.enums.ErrorEnums;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ErrorResponse {
 
-  private ErrorEnums errorCode;
+  private String errorCode;
   private int status;
   private String message;
   private Instant timestamp;

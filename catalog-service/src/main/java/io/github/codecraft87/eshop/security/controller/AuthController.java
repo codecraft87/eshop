@@ -13,7 +13,9 @@ import io.github.codecraft87.eshop.security.dto.UserRequest;
 import io.github.codecraft87.eshop.security.service.JwtService;
 import io.github.codecraft87.eshop.security.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -27,18 +29,20 @@ public class AuthController {
 
   @PostMapping("register")
   public ResponseEntity<String> registerUser(@RequestBody UserRequest user) {
+    log.info("Register request recieved {} ", user.username());
     userService.saveUser(user);
     return ResponseEntity.ok(user.username() + " registered");
   }
 
   @PostMapping("login")
   public String login(@RequestBody UserRequest user) {
-    Authentication authentication =
-        authManager.authenticate(
-            new UsernamePasswordAuthenticationToken(user.username(), user.password()));
+    log.info("Login request received {} ", user.username());
+    Authentication authentication = authManager.authenticate(
+        new UsernamePasswordAuthenticationToken(user.username(), user.password()));
     if (authentication.isAuthenticated()) {
       return jwts.generateToken(user.username());
     }
+    log.warn("Authentication failed");
     return "Failed";
   }
 }

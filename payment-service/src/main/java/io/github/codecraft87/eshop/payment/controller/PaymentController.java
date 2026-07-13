@@ -15,7 +15,9 @@ import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
 import io.github.codecraft87.eshop.payment.dto.PaymentResponse;
 import io.github.codecraft87.eshop.payment.service.PaymentService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
@@ -34,6 +36,7 @@ public class PaymentController {
   @PostMapping
   public ResponseEntity<OperationResponse> processPayment(
       @Valid @RequestBody PaymentRequest paymentRequest) {
+    log.info("Received request for processing payment");
     Long paymentId = paymentService.processPayment(paymentRequest);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(new OperationResponse(paymentId, "Payment processed"));
@@ -41,6 +44,7 @@ public class PaymentController {
 
   @PutMapping("/{paymentId}/retry")
   public ResponseEntity<OperationResponse> retryPayment(@PathVariable("paymentId") Long paymentId) {
+    log.info("Received request for retry processing payment");
     Long payId = paymentService.retryPayment(paymentId);
     return ResponseEntity.status(HttpStatus.OK)
         .body(new OperationResponse(payId, "Payment processed"));
@@ -49,6 +53,7 @@ public class PaymentController {
   @GetMapping("/{paymentId}")
   public ResponseEntity<PaymentResponse> getPaymentDetails(
       @PathVariable("paymentId") Long paymentId) {
+    log.info("Received request for getting payment");
     PaymentResponse paymentResponse = paymentService.getPaymentDetails(paymentId);
     return ResponseEntity.ok().body(paymentResponse);
   }

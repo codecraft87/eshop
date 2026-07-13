@@ -41,7 +41,6 @@ public class OrderOutboxService {
   }
 
   private OrderOutboxMessage buildPaymentRequestOutboxMessage(PaymentRequested paymentRequest) {
-    log.info("Build outbox message");
     OrderOutboxMessage outboxMessage = new OrderOutboxMessage();
     outboxMessage.setEventId(UUID.randomUUID());
     outboxMessage.setEventType(OrderEventType.PAYMENT_REQUESTED);
@@ -87,10 +86,10 @@ public class OrderOutboxService {
 
   public void publishPendingEvents() {
 
-    List<OrderOutboxMessage> events =
-        outboxRepository.findByStatusInOrderByCreatedAt(
-            List.of(OrderEventStatus.NEW, OrderEventStatus.FAILED));
-    if (events.size() > 0) log.info("Pending order events to publish {} ", events.size());
+    List<OrderOutboxMessage> events = outboxRepository.findByStatusInOrderByCreatedAt(
+        List.of(OrderEventStatus.NEW, OrderEventStatus.FAILED));
+    if (events.size() > 0)
+      log.info("Pending order events to publish {} ", events.size());
 
     for (OrderOutboxMessage event : events) {
       try {
@@ -102,16 +101,14 @@ public class OrderOutboxService {
             publishPaymentRequestedEvent(event.getPayload());
             break;
           default:
-            log.info("unknown event type to handle");
+            log.warn("unknown event type to handle");
         }
-        log.info("event published and marked as published");
         event.markPublished();
       } catch (AmqpException ex) {
         log.error("Event published failed ", ex);
         event.markFailed(ex.getMessage());
       }
       if (events.size() > 0) {
-        log.info("Publishing event {} ", event.getEventId().toString());
         outboxRepository.saveAll(events);
         log.info("events saved");
       }
@@ -119,13 +116,11 @@ public class OrderOutboxService {
   }
 
   private void publishOrderCreatedEvent(String payload) {
-    log.info("Publishing order created event ");
     rabbitTemplate.convertAndSend(
         ExchangeConstants.ESHOP_EXCHANGE, RoutingKeyConstants.ORDER_CREATED, payload);
   }
 
   private void publishPaymentRequestedEvent(String payload) {
-    log.info("Publishing order created event ");
     rabbitTemplate.convertAndSend(
         ExchangeConstants.ESHOP_EXCHANGE, RoutingKeyConstants.ORDER_PAYMENT_REQUESTED, payload);
   }

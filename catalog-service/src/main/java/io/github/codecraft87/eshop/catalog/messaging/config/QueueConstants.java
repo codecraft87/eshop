@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.messaging.config;
+package io.github.codecraft87.eshop.catalog.messaging.config;
 
 public class QueueConstants {
 

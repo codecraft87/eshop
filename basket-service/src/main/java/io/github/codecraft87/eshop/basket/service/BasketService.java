@@ -33,7 +33,7 @@ import tools.jackson.databind.ObjectMapper;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class BasketService  {
+public class BasketService {
 
   private final BasketRepository basketRepository;
   private final CatalogModuleService catalogService;
@@ -41,21 +41,22 @@ public class BasketService  {
   private final ObjectMapper objectMapper;
 
   public Long saveBasket(BasketRequest basketRequest) {
-      log.info("Basket save");
+    log.info("Modiying basket ");
     Basket activeBasket = getActiveBasketForUser(basketRequest);
 
     if (activeBasket == null) {
+      log.info("No active basket found, creating new.");
       activeBasket = new Basket();
       addItemsToBasket(activeBasket, basketRequest);
     } else {
+      log.info("Active basket found, modifying it!!!");
       updateBasket(activeBasket, basketRequest);
     }
-    log.info("Basked updated "+activeBasket.getId());
+    log.info("Basked updated " + activeBasket.getId());
     return activeBasket.getId();
   }
 
   public List<BasketResponse> getBasketDetails(Long userId) {
-
     Basket basket = getActiveBasketForUser(new BasketRequest(userId));
 
     List<BasketResponse> basketDetails = null;
@@ -71,7 +72,7 @@ public class BasketService  {
 
   @Transactional
   public void checkout(BasketRequest itemRequest) {
-    log.info("checkout basket v1.");
+    log.info("Checking out basket for user {}", itemRequest.getUserId());
     Basket basket = getActiveBasketForUser(itemRequest);
 
     if (basket == null || basket.getItems().isEmpty()) {
@@ -79,12 +80,12 @@ public class BasketService  {
     }
     basket.setStatus(BasketStatus.CHECKOUT_IN_PROGRESS);
     saveBasket(basket);
+    log.info("Basket {} check out successfully", basket.getId());
     BasketOutboxMessage basketOutboxEventEntity = buildBasketCheckedOutOutboxEvent(basket);
     outboxService.saveBasketOutboxEvent(basketOutboxEventEntity);
   }
 
   private BasketOutboxMessage buildBasketCheckedOutOutboxEvent(Basket basket) {
-    log.info("Build basket checkout event entity");
     BasketOutboxMessage entity = new BasketOutboxMessage();
     entity.setEventId(UUID.randomUUID());
     entity.setEventType(OutboxEventType.BASKET_CHECKED_OUT);
@@ -96,7 +97,6 @@ public class BasketService  {
       entity.setPayload(objectMapper.writeValueAsString(checkedOutEvent));
     } catch (JacksonException ex) {
       log.error("Failed to serialize BasketCheckedOutEvent", ex);
-
       throw new RuntimeException("Failed to serialize BasketCheckedOutEvent", ex);
     }
     return entity;
@@ -104,7 +104,6 @@ public class BasketService  {
 
   private BasketCheckedOutEvent getBasketCheckedOutEvent(
       Basket basket, BasketOutboxMessage outboxEvent) {
-    log.info("return json payload ");
     return new BasketCheckedOutEvent(
         outboxEvent.getEventId().toString(),
         basket.getId(),
@@ -113,13 +112,11 @@ public class BasketService  {
   }
 
   private Basket getActiveBasketForUser(BasketRequest basketRequest) {
-    Basket basket =
-        basketRepository.findByUserIdAndStatus(basketRequest.getUserId(), BasketStatus.ACTIVE);
+    Basket basket = basketRepository.findByUserIdAndStatus(basketRequest.getUserId(), BasketStatus.ACTIVE);
     return basket;
   }
 
   private void addItemsToBasket(Basket basket, BasketRequest basketRequest) {
-      log.info("add to basket");
     List<BasketItem> basketItems = getBasketItemsFromRequest(basket, basketRequest);
 
     basket.setItems(basketItems);
@@ -143,7 +140,7 @@ public class BasketService  {
       basketItem.setUnitPrice(product.unitPrice());
       basketItem.setQuantity(item.getQuantity());
       basketItems.add(basketItem);
-     
+
     }
     return basketItems;
   }
@@ -151,14 +148,13 @@ public class BasketService  {
   private void updateBasket(Basket basket, BasketRequest basketRequest) {
     for (BasketItemRequest itemDto : basketRequest.getItems()) {
       if (itemDto.getQuantity() <= 0) {
-
+        log.warn("exiting quntity is zero,remove product from basket");
         removeProductFromBasket(basket, itemDto);
 
         continue;
       }
       Optional<BasketItem> optionalbasketItem = basket.findItemByProductId(itemDto.getProductId());
       if (optionalbasketItem.isPresent()) {
-          log.info("is present");
         BasketItem basketItem = optionalbasketItem.get();
         if (itemDto.getQuantity() > 0 && !basketItem.getQuantity().equals(itemDto.getQuantity())) {
           basketItem.setQuantity(itemDto.getQuantity());
@@ -185,10 +181,9 @@ public class BasketService  {
     basket
         .getItems()
         .removeIf(
-            basketItem ->
-                basketRequest.getItems().stream()
-                    .noneMatch(
-                        item -> item.getProductId().equals(basketItem.getProductId())));
+            basketItem -> basketRequest.getItems().stream()
+                .noneMatch(
+                    item -> item.getProductId().equals(basketItem.getProductId())));
   }
 
   private void removeProductFromBasket(Basket basket, BasketItemRequest itemDto) {
@@ -196,9 +191,7 @@ public class BasketService  {
   }
 
   private ProductSnapshot findProductById(Long productId) {
-      log.info("calling catalog for product {}",productId);
     ProductSnapshot product = catalogService.getProductById(productId);
-    log.info("Catalog responded {}",productId);
     return product;
   }
 
@@ -218,16 +211,16 @@ public class BasketService  {
 
   @Transactional
   public void updateBasketForOrder(Long basketId) {
-    Basket basket =
-        basketRepository
-            .findById(basketId)
-            .orElseThrow(() -> new BasketNotFoundException(basketId));
+    Basket basket = basketRepository
+        .findById(basketId)
+        .orElseThrow(() -> new BasketNotFoundException(basketId));
     if (basket.getStatus() == BasketStatus.CHECKOUT_IN_PROGRESS) {
       basket.setStatus(BasketStatus.CHECKED_OUT);
       basket.getItems().clear();
       saveBasket(basket);
       log.info("Basket checkout flow completed for async communication");
     } else {
+      log.warn("On order ceated, Basket is invalid state {} ", basket.getStatus());
       throw new IllegalStateException(
           "On order ceated, Basket is invalid state " + basket.getStatus());
     }

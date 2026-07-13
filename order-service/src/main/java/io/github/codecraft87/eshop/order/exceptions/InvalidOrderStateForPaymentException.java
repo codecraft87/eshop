@@ -1,9 +1,29 @@
 package io.github.codecraft87.eshop.order.exceptions;
 
-public class InvalidOrderStateForPaymentException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+import io.github.codecraft87.eshop.order.enums.ErrorEnums;
+
+public class InvalidOrderStateForPaymentException extends OrderException {
   private static final long serialVersionUID = 1L;
 
   public InvalidOrderStateForPaymentException(Long id) {
-    super("Payment is not allowed for this order [" + id + "]");
+    this.id = id.toString();
   }
+
+  @Override
+  protected String getErrorMessage() {
+    return String.format(ErrorEnums.INVALID_ORDER_STATE.getErrorMessage(), this.id);
+  }
+
+  @Override
+  public HttpStatus geHttpStatus() {
+    return HttpStatus.BAD_REQUEST;
+  }
+
+  @Override
+  public String getErrorCode() {
+    return ErrorEnums.INVALID_ORDER_STATE.getErrorCode();
+  }
+
 }

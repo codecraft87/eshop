@@ -1,19 +1,30 @@
 package io.github.codecraft87.eshop.payment.enums;
 
 public enum ErrorEnums {
-  ORDER_NOT_FOUND,
-  ORDER_ALREADY_CANCELLED,
-  ORDER_CANNOT_BE_MODIFIED,
-  PAYMENT_NOT_FOUND,
-  DUPLICATE_PAYMENT,
-  INVALID_ORDER_STATE,
-  PAYMENT_CANNOT_BE_RETRIED,
-  CANCELLED_ORDER_CANNOT_BE_MODIFIED,
-  ORDER_NOT_FOUND_FOR_PAYMENT,
-  PAYMENT_CANNOT_BE_CANCELLED,
-  PRODUCT_NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-  VALIDATION_FAILED,
-  RESOURCE_NOT_FOUND,
-  REGISTRATION_FAILED
+  DUPLICATE_PAYMENT(
+      "DUPLICATE_PAYMENT",
+      "Duplicate payment detected for order [{}]"),
+  PAYMENT_NOT_FOUND(
+      "PAYMENT_NOT_FOUND",
+      "Invalid payment id[{}]"),
+  DB_NOT_AVAILABLE(
+      "DB_NOT_AVAILABLE",
+      "Database is currently unavailable. Please try again later.");
+
+  private final String errorCode;
+
+  private final String errorMessage;
+
+  public String getErrorMessage() {
+    return errorMessage;
+  }
+
+  public String getErrorCode() {
+    return errorCode;
+  }
+
+  private ErrorEnums(String errCode, String errorMessage) {
+    this.errorCode = errCode;
+    this.errorMessage = errorMessage;
+  }
 }
