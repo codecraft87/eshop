@@ -11,9 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import io.github.codecraft87.eshop.catalog.common.enums.ErrorEnums;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -60,7 +58,6 @@ public class GlobalExceptionHandler {
 
         @ExceptionHandler(DataAccessException.class)
         public ResponseEntity<ErrorResponse> handleDataAccessException(DataAccessException e) {
-                log.info("******* Handling DataAccessException");
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                                 .body(new ErrorResponse(
                                                 ErrorEnums.DB_NOT_AVAILABLE.getErrorCode(),

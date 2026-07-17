@@ -9,7 +9,10 @@ public enum ErrorEnums {
                "Validation failed"),
      DB_NOT_AVAILABLE(
                "DB_NOT_AVAILABLE",
-               "Database is currently unavailable. Please try again later.");
+               "Database is currently unavailable. Please try again later."),
+     INVALID_JWT_TOKEN(
+               "INVALID_JWT_TOKEN",
+               "Invalid JWT token");
 
      private final String errorCode;
      private final String errorMessage;
