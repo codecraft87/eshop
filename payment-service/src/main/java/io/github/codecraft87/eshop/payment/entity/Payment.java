@@ -5,7 +5,7 @@ import java.time.Instant;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import io.github.codecraft87.eshop.payment.enums.PaymentStatus;
+import io.github.codecraft87.eshop.payment.common.enums.PaymentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

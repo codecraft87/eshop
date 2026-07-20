@@ -7,7 +7,7 @@ public enum ErrorEnums {
             "Role not found {}"),
     REGISTRATION_FAILED(
             "REGISTRATION_FAILED",
-            "Registration Failed: User [{}], already exists."),
+            "Registration Failed: User [%s], already exists."),
     INVALID_JWT_TOKEN(
             "INVALID_JWT_TOKEN",
             "Invalid JWT token"),

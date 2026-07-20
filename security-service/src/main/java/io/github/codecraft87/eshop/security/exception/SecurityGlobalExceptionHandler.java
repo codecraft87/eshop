@@ -2,6 +2,7 @@ package io.github.codecraft87.eshop.security.exception;
 
 import java.time.Instant;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,6 +17,18 @@ public class SecurityGlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleRoleNotFoundException(
             SecurityException ex) {
         return buildResponseEntity(ex);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+        log.error("Caught by generic handler", ex);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse(
+                        "UNEXPECTED",
+                        500,
+                        ex.getClass().getSimpleName(),
+                        Instant.now()));
     }
 
     private ResponseEntity<ErrorResponse> buildResponseEntity(SecurityException ex) {

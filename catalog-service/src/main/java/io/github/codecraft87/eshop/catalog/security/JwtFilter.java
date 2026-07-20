@@ -51,9 +51,11 @@ public class JwtFilter extends OncePerRequestFilter {
     } catch (DataAccessException e) {
       log.error("Data access exception ", e);
       errorResponseWriter.writeDatabaseUnavailable(response);
+      return;
     } catch (InvalidJwtTokenException e) {
       log.error("Invalid JWT exception ", e);
       errorResponseWriter.writeInvalidJWTToken(response);
+      return;
     }
     filterChain.doFilter(request, response);
   }

@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import io.github.codecraft87.eshop.catalog.common.enums.ErrorEnums;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -63,6 +65,18 @@ public class GlobalExceptionHandler {
                                                 ErrorEnums.DB_NOT_AVAILABLE.getErrorCode(),
                                                 HttpStatus.SERVICE_UNAVAILABLE.value(),
                                                 ErrorEnums.DB_NOT_AVAILABLE.getErrorMessage(),
+                                                Instant.now()));
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+                log.error("Caught by generic handler", ex);
+
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(new ErrorResponse(
+                                                "UNEXPECTED",
+                                                500,
+                                                ex.getClass().getSimpleName(),
                                                 Instant.now()));
         }
 }

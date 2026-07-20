@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import io.github.codecraft87.eshop.basket.enums.BasketStatus;
+import io.github.codecraft87.eshop.basket.common.enums.BasketStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

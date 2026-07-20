@@ -11,7 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import io.github.codecraft87.eshop.catalog.common.CatalogConstants;
+import io.github.codecraft87.eshop.catalog.common.constants.CatalogConstants;
 import io.github.codecraft87.eshop.catalog.exceptions.InvalidJwtTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

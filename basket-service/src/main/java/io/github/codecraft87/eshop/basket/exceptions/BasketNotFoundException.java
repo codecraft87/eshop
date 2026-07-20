@@ -2,7 +2,7 @@ package io.github.codecraft87.eshop.basket.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-import io.github.codecraft87.eshop.basket.enums.ErrorEnums;
+import io.github.codecraft87.eshop.basket.common.enums.ErrorEnums;
 
 public class BasketNotFoundException extends BasketException {
 

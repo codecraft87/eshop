@@ -3,7 +3,7 @@ package io.github.codecraft87.eshop.catalog.common.enums;
 public enum ErrorEnums {
      PRODUCT_NOT_FOUND(
                "PRODUCT_NOT_FOUND",
-               "Product [{}] not found in a catalog"),
+               "Product [%s] not found in a catalog"),
      VALIDATION_FAILED(
                "VALIDATION_FAILED",
                "Validation failed"),

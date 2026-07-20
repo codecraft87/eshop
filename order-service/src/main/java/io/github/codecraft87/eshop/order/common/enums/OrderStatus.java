@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.order.enums;
+package io.github.codecraft87.eshop.order.common.enums;
 
 public enum OrderStatus {
   CREATED,

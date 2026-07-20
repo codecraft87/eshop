@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.github.codecraft87.eshop.security.dto.UserRequest;
 import io.github.codecraft87.eshop.security.entity.Role;
@@ -27,6 +28,7 @@ public class UserService {
 
   private final BCryptPasswordEncoder encoder;
 
+  @Transactional
   public void saveUser(UserRequest userRequest) {
     log.info("Saving user details {} ", userRequest.username());
     User user = toEntityUser(userRequest);

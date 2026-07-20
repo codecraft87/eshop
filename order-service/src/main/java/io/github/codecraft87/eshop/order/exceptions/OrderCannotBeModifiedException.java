@@ -2,7 +2,7 @@ package io.github.codecraft87.eshop.order.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-import io.github.codecraft87.eshop.order.enums.ErrorEnums;
+import io.github.codecraft87.eshop.order.common.enums.ErrorEnums;
 
 public class OrderCannotBeModifiedException extends OrderException {
   private static final long serialVersionUID = 1L;

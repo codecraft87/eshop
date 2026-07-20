@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.github.codecraft87.eshop.catalog.dto.ProductRequest;
 import io.github.codecraft87.eshop.catalog.dto.ProductResponse;
@@ -12,7 +13,6 @@ import io.github.codecraft87.eshop.catalog.entity.Product;
 import io.github.codecraft87.eshop.catalog.exceptions.ProductNotFoundException;
 import io.github.codecraft87.eshop.catalog.mapper.ProductMapper;
 import io.github.codecraft87.eshop.catalog.repository.ProductRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +33,7 @@ public class ProductService implements CatalogModuleService {
     return productId;
   }
 
+  @Transactional(readOnly = true)
   public ProductResponse getProductDetails(Long productId) {
 
     final Product product = getProduct(productId);
@@ -40,6 +41,7 @@ public class ProductService implements CatalogModuleService {
     return ProductMapper.getProductResponse(product);
   }
 
+  @Transactional(readOnly = true)
   public List<ProductResponse> getAllProducts() {
     log.info("Getting All product ");
     final List<Product> productList = catalogRepository.findAll();
@@ -71,6 +73,7 @@ public class ProductService implements CatalogModuleService {
     return productId;
   }
 
+  @Transactional(readOnly = true)
   public Product getProduct(Long productId) {
     log.info("Getting product details {} ", productId);
     final Product product = catalogRepository

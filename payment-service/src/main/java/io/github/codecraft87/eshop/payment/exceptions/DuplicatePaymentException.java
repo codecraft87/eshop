@@ -2,7 +2,7 @@ package io.github.codecraft87.eshop.payment.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-import io.github.codecraft87.eshop.payment.enums.ErrorEnums;
+import io.github.codecraft87.eshop.payment.common.enums.ErrorEnums;
 
 public class DuplicatePaymentException extends PaymentException {
   private static final long serialVersionUID = 1L;

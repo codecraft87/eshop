@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.basket.enums;
+package io.github.codecraft87.eshop.basket.common.enums;
 
 public enum BasketStatus {
   ACTIVE,

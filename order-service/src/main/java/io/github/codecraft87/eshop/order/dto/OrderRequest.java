@@ -3,7 +3,7 @@ package io.github.codecraft87.eshop.order.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.codecraft87.eshop.order.enums.OrderStatus;
+import io.github.codecraft87.eshop.order.common.enums.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,5 +25,6 @@ public class OrderRequest {
 
   private OrderStatus status;
 
-  @Builder.Default private List<OrderItemRequest> orderItems = new ArrayList<>();
+  @Builder.Default
+  private List<OrderItemRequest> orderItems = new ArrayList<>();
 }

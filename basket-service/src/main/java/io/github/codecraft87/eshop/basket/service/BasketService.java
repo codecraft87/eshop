@@ -7,14 +7,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import io.github.codecraft87.eshop.basket.common.enums.BasketStatus;
 import io.github.codecraft87.eshop.basket.dto.BasketItemRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
 import io.github.codecraft87.eshop.basket.dto.ProductSnapshot;
 import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
-import io.github.codecraft87.eshop.basket.enums.BasketStatus;
 import io.github.codecraft87.eshop.basket.exceptions.BasketNotFoundException;
 import io.github.codecraft87.eshop.basket.mapper.BasketMapper;
 import io.github.codecraft87.eshop.basket.messaging.event.BasketCheckedOutEvent;
@@ -24,7 +25,7 @@ import io.github.codecraft87.eshop.basket.messaging.outbox.BasketOutboxService;
 import io.github.codecraft87.eshop.basket.messaging.outbox.OutboxEventStatus;
 import io.github.codecraft87.eshop.basket.messaging.outbox.OutboxEventType;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.JacksonException;
@@ -40,6 +41,7 @@ public class BasketService {
   private final BasketOutboxService outboxService;
   private final ObjectMapper objectMapper;
 
+  @Transactional
   public Long saveBasket(BasketRequest basketRequest) {
     log.info("Modiying basket ");
     Basket activeBasket = getActiveBasketForUser(basketRequest);
@@ -56,6 +58,7 @@ public class BasketService {
     return activeBasket.getId();
   }
 
+  @Transactional(readOnly = true)
   public List<BasketResponse> getBasketDetails(Long userId) {
     Basket basket = getActiveBasketForUser(new BasketRequest(userId));
 
@@ -71,7 +74,7 @@ public class BasketService {
   }
 
   @Transactional
-  public void checkout(BasketRequest itemRequest) {
+  public Long checkout(BasketRequest itemRequest) {
     log.info("Checking out basket for user {}", itemRequest.getUserId());
     Basket basket = getActiveBasketForUser(itemRequest);
 
@@ -83,6 +86,24 @@ public class BasketService {
     log.info("Basket {} check out successfully", basket.getId());
     BasketOutboxMessage basketOutboxEventEntity = buildBasketCheckedOutOutboxEvent(basket);
     outboxService.saveBasketOutboxEvent(basketOutboxEventEntity);
+    return basket.getId();
+  }
+
+  @Transactional
+  public void updateBasketForOrder(Long basketId) {
+    Basket basket = basketRepository
+        .findById(basketId)
+        .orElseThrow(() -> new BasketNotFoundException(basketId));
+    if (basket.getStatus() == BasketStatus.CHECKOUT_IN_PROGRESS) {
+      basket.setStatus(BasketStatus.CHECKED_OUT);
+      basket.getItems().clear();
+      saveBasket(basket);
+      log.info("Basket checkout flow completed for async communication");
+    } else {
+      log.warn("On order ceated, Basket is invalid state {} ", basket.getStatus());
+      throw new IllegalStateException(
+          "On order ceated, Basket is invalid state " + basket.getStatus());
+    }
   }
 
   private BasketOutboxMessage buildBasketCheckedOutOutboxEvent(Basket basket) {
@@ -112,8 +133,15 @@ public class BasketService {
   }
 
   private Basket getActiveBasketForUser(BasketRequest basketRequest) {
-    Basket basket = basketRepository.findByUserIdAndStatus(basketRequest.getUserId(), BasketStatus.ACTIVE);
-    return basket;
+    List<Basket> activeBaskets = basketRepository.findByUserIdAndStatus(basketRequest.getUserId(), BasketStatus.ACTIVE);
+    if (activeBaskets.isEmpty()) {
+      return null;
+    }
+    if (activeBaskets.size() > 1) {
+      throw new IllegalStateException(
+          "Data integrity violation: Multiple active baskets found for user " + basketRequest.getUserId());
+    }
+    return activeBaskets.getFirst();
   }
 
   private void addItemsToBasket(Basket basket, BasketRequest basketRequest) {
@@ -147,22 +175,27 @@ public class BasketService {
 
   private void updateBasket(Basket basket, BasketRequest basketRequest) {
     for (BasketItemRequest itemDto : basketRequest.getItems()) {
+      log.info("iterating {} ", itemDto);
       if (itemDto.getQuantity() <= 0) {
         log.warn("exiting quntity is zero,remove product from basket");
         removeProductFromBasket(basket, itemDto);
 
         continue;
       }
+      log.info("Basket {} ", basket);
       Optional<BasketItem> optionalbasketItem = basket.findItemByProductId(itemDto.getProductId());
       if (optionalbasketItem.isPresent()) {
         BasketItem basketItem = optionalbasketItem.get();
+        log.info("Qty {} ", basketItem.getQuantity());
         if (itemDto.getQuantity() > 0 && !basketItem.getQuantity().equals(itemDto.getQuantity())) {
           basketItem.setQuantity(itemDto.getQuantity());
         }
       } else {
+        log.info("creating new basket item");
         BasketItem basketItem = new BasketItem();
         basketItem.setBasket(basket);
         ProductSnapshot product = findProductById(itemDto.getProductId());
+        log.info("product from catalog service {} ", product);
         basketItem.setProductId(product.productId());
         basketItem.setProductName(product.productName());
         basketItem.setUnitPrice(product.unitPrice());
@@ -209,20 +242,4 @@ public class BasketService {
         basketItem.getQuantity());
   }
 
-  @Transactional
-  public void updateBasketForOrder(Long basketId) {
-    Basket basket = basketRepository
-        .findById(basketId)
-        .orElseThrow(() -> new BasketNotFoundException(basketId));
-    if (basket.getStatus() == BasketStatus.CHECKOUT_IN_PROGRESS) {
-      basket.setStatus(BasketStatus.CHECKED_OUT);
-      basket.getItems().clear();
-      saveBasket(basket);
-      log.info("Basket checkout flow completed for async communication");
-    } else {
-      log.warn("On order ceated, Basket is invalid state {} ", basket.getStatus());
-      throw new IllegalStateException(
-          "On order ceated, Basket is invalid state " + basket.getStatus());
-    }
-  }
 }

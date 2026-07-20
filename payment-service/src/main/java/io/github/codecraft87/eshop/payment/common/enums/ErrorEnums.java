@@ -1,15 +1,18 @@
-package io.github.codecraft87.eshop.payment.enums;
+package io.github.codecraft87.eshop.payment.common.enums;
 
 public enum ErrorEnums {
   DUPLICATE_PAYMENT(
       "DUPLICATE_PAYMENT",
-      "Duplicate payment detected for order [{}]"),
+      "Duplicate payment detected for order [%s]"),
   PAYMENT_NOT_FOUND(
       "PAYMENT_NOT_FOUND",
-      "Invalid payment id[{}]"),
+      "Invalid payment id[%s]"),
   DB_NOT_AVAILABLE(
       "DB_NOT_AVAILABLE",
-      "Database is currently unavailable. Please try again later.");
+      "Database is currently unavailable. Please try again later."),
+  INVALID_JWT_TOKEN(
+      "INVALID_JWT_TOKEN",
+      "Invalid JWT token");
 
   private final String errorCode;
 
