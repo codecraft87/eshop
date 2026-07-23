@@ -1,0 +1,18 @@
+package io.github.codecraft87.eshop.security.dto;
+
+import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserDTO {
+
+    private Long userId;
+    private String userName;
+    private List<String> roles;
+
+}

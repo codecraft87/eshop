@@ -10,7 +10,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import io.github.codecraft87.eshop.basket.common.constants.BasketConstants;
 import io.github.codecraft87.eshop.basket.exceptions.InvalidJwtTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -42,7 +41,7 @@ public class JwtService {
   }
 
   public List<GrantedAuthority> extractAuthorities(Claims claims) {
-    List<String> roles = claims.get(BasketConstants.ROLES_CLAIM, List.class);
+    List<String> roles = claims.get(SecurityConstants.ROLES_CLAIM, List.class);
     if (roles != null) {
       return roles.stream()
           .map(SimpleGrantedAuthority::new)

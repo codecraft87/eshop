@@ -14,6 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.security.common.SecurityConstants;
+import io.github.codecraft87.eshop.security.dto.UserDTO;
 import io.github.codecraft87.eshop.security.exception.InvalidJwtTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -26,13 +27,14 @@ public class JwtService {
   @Value("${jwt.secret}")
   private String secretKey;
 
-  public String generateToken(String userName, List<String> roles) {
+  public String generateToken(UserDTO user) {
     Map<String, Object> claims = new HashMap<String, Object>();
 
-    claims.put(SecurityConstants.ROLES_CLAIM, roles);
+    claims.put(SecurityConstants.ROLES_CLAIM, user.getRoles());
+    claims.put("userId", user.getUserId());
     return Jwts.builder()
         .claims(claims)
-        .subject(userName)
+        .subject(user.getUserName())
         .issuedAt(new Date(System.currentTimeMillis()))
         .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 3))
         .signWith(getSecretKey())

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.codecraft87.eshop.security.dto.OperationResponse;
+import io.github.codecraft87.eshop.security.dto.UserDTO;
+import io.github.codecraft87.eshop.security.dto.UserPrinicipal;
 import io.github.codecraft87.eshop.security.dto.UserRequest;
 import io.github.codecraft87.eshop.security.service.JwtService;
 import io.github.codecraft87.eshop.security.service.UserService;
@@ -20,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth/api")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -39,19 +41,20 @@ public class AuthController {
   }
 
   @PostMapping("login")
-  public OperationResponse<String> login(@RequestBody UserRequest user) {
-    log.info("Login request received {} ", user.username());
+  public OperationResponse<String> login(@RequestBody UserRequest userRequest) {
+    log.info("Login request received {} ", userRequest.username());
     Authentication authentication = authManager.authenticate(
-        new UsernamePasswordAuthenticationToken(user.username(), user.password()));
+        new UsernamePasswordAuthenticationToken(userRequest.username(), userRequest.password()));
     authentication.getAuthorities();
     if (authentication.isAuthenticated()) {
-
+      UserPrinicipal userPrincipal = (UserPrinicipal) authentication.getPrincipal();
       List<String> roles = authentication.getAuthorities()
           .stream()
           .map(role -> role.getAuthority())
           .filter(role -> !role.startsWith("FACTOR_"))
           .toList();
-      String jwtToken = jwts.generateToken(user.username(), roles);
+      UserDTO user = new UserDTO(userPrincipal.getUserId(), userRequest.username(), roles);
+      String jwtToken = jwts.generateToken(user);
       OperationResponse<String> response = new OperationResponse<>(null, "Login successfull");
       response.setData(jwtToken);
       return response;

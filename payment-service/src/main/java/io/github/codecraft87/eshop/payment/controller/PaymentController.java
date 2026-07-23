@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/payments/api")
 @RequiredArgsConstructor
 public class PaymentController {
 
@@ -28,7 +28,7 @@ public class PaymentController {
     return ResponseEntity.ok().body("<h1>Payment Service is running.</h1>");
   }
 
-  @PutMapping("/{paymentId}/retry")
+  @PutMapping("/retry/{paymentId}")
   public ResponseEntity<OperationResponse<Object>> retryPayment(@PathVariable("paymentId") Long paymentId) {
     log.info("Received request for retry processing payment");
     Long payId = paymentService.retryPayment(paymentId);

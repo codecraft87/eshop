@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,13 +20,13 @@ import io.github.codecraft87.eshop.order.dto.OperationResponse;
 import io.github.codecraft87.eshop.order.dto.OrderRequest;
 import io.github.codecraft87.eshop.order.dto.OrderResponse;
 import io.github.codecraft87.eshop.order.dto.ProcessOrderInput;
+import io.github.codecraft87.eshop.order.security.UserPrincipal;
 import io.github.codecraft87.eshop.order.service.OrderService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/orders/api")
 @Slf4j
 @RequiredArgsConstructor
 public class OrderController {
@@ -35,17 +36,6 @@ public class OrderController {
   @GetMapping("/about")
   public ResponseEntity<String> about() {
     return ResponseEntity.ok("<h1>Order Service is running.</h1>");
-  }
-
-  @PostMapping
-  public ResponseEntity<OperationResponse<Object>> createOrder(
-      @Valid @RequestBody OrderRequest orderRequest) {
-    log.info("Create order request recieved");
-    final Long orderId = orderService.createOrder(orderRequest);
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(
-            new OperationResponse<>(
-                orderId, ResponsMessageConstants.ORDER_CREATED));
   }
 
   @GetMapping("/{orderId}")
@@ -58,12 +48,14 @@ public class OrderController {
     return ResponseEntity.ok().body(response);
   }
 
-  @GetMapping("/user/{userId}")
-  public ResponseEntity<OperationResponse<List<OrderResponse>>> getOrders(@PathVariable("userId") Long userId) {
+  @GetMapping
+  public ResponseEntity<OperationResponse<List<OrderResponse>>> getOrder(Authentication authentication) {
+    UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+    log.info("Getting basket details for user {}", userPrincipal.getUserId());
     log.info("Get all order for user request received ");
-    OperationResponse<List<OrderResponse>> response = new OperationResponse<>(userId,
+    OperationResponse<List<OrderResponse>> response = new OperationResponse<>(userPrincipal.getUserId(),
         ResponsMessageConstants.ORDER_RETRIEVED);
-    List<OrderResponse> allOrders = orderService.getOrders(userId);
+    List<OrderResponse> allOrders = orderService.getOrders(userPrincipal.getUserId());
     response.setData(allOrders);
     return ResponseEntity.ok().body(response);
   }
