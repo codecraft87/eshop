@@ -15,9 +15,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
@@ -27,7 +25,6 @@ public class JWTFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    log.info("API Gateway Filter jwt token");
     String authHeader = request.getHeader("Authorization");
     String token = null;
     String userName = null;
@@ -38,7 +35,6 @@ public class JWTFilter extends OncePerRequestFilter {
       Claims claims = jwtService.parseAndValidate(token);
       userName = claims.getSubject();
       Integer userId = (Integer) claims.get(SecurityConstants.USER_ID);
-      log.info("User id {}", userId);
       List<GrantedAuthority> authorities = jwtService.extractAuthorities(claims);
       UserPrincipal userPrincipal = new UserPrincipal(Long.valueOf(userId), userName, authorities);
 
@@ -46,9 +42,7 @@ public class JWTFilter extends OncePerRequestFilter {
           userPrincipal, null, authorities);
 
       SecurityContextHolder.getContext().setAuthentication(authToken);
-      log.info("User authenticated");
     }
-    log.info("Filter chain doFilter");
     filterChain.doFilter(request, response);
   }
 }
