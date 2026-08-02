@@ -22,8 +22,7 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(HttpSecurity http) {
     http.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/error").permitAll()
-            .anyRequest().authenticated())
+            .anyRequest().permitAll())
         .sessionManagement(
             sessionMgr -> sessionMgr.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .httpBasic(Customizer.withDefaults())
