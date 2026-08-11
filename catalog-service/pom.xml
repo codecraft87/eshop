@@ -11,7 +11,7 @@
 	<groupId>io.github.codecraft87</groupId>
 	<artifactId>catalog-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>eshop</name>
+	<name>catalog-service</name>
 	<description />
 	<url/>
 	<licenses>
@@ -108,7 +108,7 @@
 	</dependencyManagement>
 
 	<build>
-		<finalName>Order-Payment-Service</finalName>
+		<finalName>catalog-service</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
