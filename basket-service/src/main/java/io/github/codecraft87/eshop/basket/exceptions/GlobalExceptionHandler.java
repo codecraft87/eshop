@@ -34,6 +34,7 @@ public class GlobalExceptionHandler {
         @ExceptionHandler(ResourceAccessException.class)
         public ResponseEntity<ErrorResponse> handleCatalogServiceUnavaibleException(
                         ResourceAccessException ex) {
+
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                                 .body(
                                                 new ErrorResponse(

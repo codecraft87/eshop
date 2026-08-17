@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.ResourceAccessException;
 
 import io.github.codecraft87.eshop.basket.common.enums.BasketStatus;
 import io.github.codecraft87.eshop.basket.dto.BasketItemRequest;
@@ -17,6 +18,7 @@ import io.github.codecraft87.eshop.basket.dto.ProductSnapshot;
 import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
 import io.github.codecraft87.eshop.basket.exceptions.BasketNotFoundException;
+import io.github.codecraft87.eshop.basket.exceptions.CatalogServiceUnavailableException;
 import io.github.codecraft87.eshop.basket.mapper.BasketMapper;
 import io.github.codecraft87.eshop.basket.messaging.event.BasketCheckedOutEvent;
 import io.github.codecraft87.eshop.basket.messaging.event.BasketItemEvent;

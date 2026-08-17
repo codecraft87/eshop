@@ -85,9 +85,12 @@ public class PaymentService implements PaymentModuleService {
 
   private void checkForDuplicatePayment(Long orderId) {
     log.info("checking duplicate payment for order id {}", orderId);
-    if (paymentRepo.existsByOrderIdAndStatus(orderId, PaymentStatus.PAYMENT_DONE)) {
-      throw new DuplicatePaymentException(orderId);
+
+    boolean isDuplicate = paymentRepo.existsByOrderIdAndStatus(orderId, PaymentStatus.PAYMENT_DONE);
+    if (isDuplicate) {
+      log.warn("Payment already completed for order {}", orderId);
     }
+
   }
 
   private Payment completePayment(Payment paymentToBeProcesed, PaymentStatus paymentStatus) {
