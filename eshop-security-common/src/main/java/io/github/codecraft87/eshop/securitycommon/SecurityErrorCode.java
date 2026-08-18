@@ -1,9 +1,8 @@
 package io.github.codecraft87.eshop.securitycommon;
 
-public enum ErrorEnums {
+public enum SecurityErrorCode {
 
     INVALID_JWT_TOKEN(
-
             "INVALID_JWT_TOKEN",
             "Invalid JWT token");
 
@@ -19,7 +18,7 @@ public enum ErrorEnums {
         return errorCode;
     }
 
-    private ErrorEnums(String errCode, String errorMessage) {
+    private SecurityErrorCode(String errCode, String errorMessage) {
         this.errorCode = errCode;
         this.errorMessage = errorMessage;
     }

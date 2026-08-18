@@ -42,7 +42,6 @@ public class BasketController {
 
   @GetMapping
   public ResponseEntity<OperationResponse<List<BasketResponse>>> getBasket(Authentication authentication) {
-    log.info("User principal class {} ", authentication.getPrincipal().getClass().getName());
     UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
     log.info("Getting basket details for user {}", userPrincipal.getUserId());

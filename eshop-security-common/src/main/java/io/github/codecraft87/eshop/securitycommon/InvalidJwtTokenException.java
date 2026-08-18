@@ -1,17 +1,9 @@
 package io.github.codecraft87.eshop.securitycommon;
 
-import org.springframework.http.HttpStatus;
-
 public class InvalidJwtTokenException extends RuntimeException {
-    public String getErrorMessage() {
-        return ErrorEnums.INVALID_JWT_TOKEN.getErrorMessage();
-    }
+    private static final long serialVersionUID = 1L;
 
-    public HttpStatus geHttpStatus() {
-        return HttpStatus.UNAUTHORIZED;
-    }
-
-    public String getErrorCode() {
-        return ErrorEnums.INVALID_JWT_TOKEN.getErrorCode();
+    public InvalidJwtTokenException() {
+        super("Invalid JWT token");
     }
 }
