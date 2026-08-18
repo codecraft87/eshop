@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.github.codecraft87.eshop.security.dto.UserPrinicipal;
+import io.github.codecraft87.eshop.securitycommon.UserPrincipal;
 import io.github.codecraft87.eshop.security.entity.User;
 import io.github.codecraft87.eshop.security.repository.UserRepository;
 

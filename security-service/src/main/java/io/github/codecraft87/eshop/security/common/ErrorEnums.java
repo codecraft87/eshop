@@ -8,9 +8,6 @@ public enum ErrorEnums {
     REGISTRATION_FAILED(
             "REGISTRATION_FAILED",
             "Registration Failed: User [%s], already exists."),
-    INVALID_JWT_TOKEN(
-            "INVALID_JWT_TOKEN",
-            "Invalid JWT token"),
     DB_NOT_AVAILABLE(
             "DB_NOT_AVAILABLE",
             "Database is currently unavailable. Please try again later.");

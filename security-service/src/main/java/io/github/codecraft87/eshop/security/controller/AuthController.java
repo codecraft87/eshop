@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.codecraft87.eshop.security.dto.OperationResponse;
+import io.github.codecraft87.eshop.common.OperationResponse;
 import io.github.codecraft87.eshop.security.dto.UserDTO;
-import io.github.codecraft87.eshop.security.dto.UserPrinicipal;
+import io.github.codecraft87.eshop.securitycommon.UserPrincipal;
 import io.github.codecraft87.eshop.security.dto.UserRequest;
-import io.github.codecraft87.eshop.security.service.JwtService;
+import io.github.codecraft87.eshop.security.service.JwtTokenGenerator;
 import io.github.codecraft87.eshop.security.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class AuthController {
 
   private final AuthenticationManager authManager;
 
-  private final JwtService jwts;
+  private final JwtTokenGenerator jwtTokenGenerator;
 
   @PostMapping("register")
   public ResponseEntity<OperationResponse<String>> registerUser(@RequestBody UserRequest user) {
@@ -54,7 +54,7 @@ public class AuthController {
           .filter(role -> !role.startsWith("FACTOR_"))
           .toList();
       UserDTO user = new UserDTO(userPrincipal.getUserId(), userRequest.username(), roles);
-      String jwtToken = jwts.generateToken(user);
+      String jwtToken = jwtTokenGenerator.generateToken(user);
       OperationResponse<String> response = new OperationResponse<>(null, "Login successfull");
       response.setData(jwtToken);
       return response;

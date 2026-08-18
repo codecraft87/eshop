@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.security.dto;
+package io.github.codecraft87.eshop.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OperationResponse<T> {
 
-  private String id;
+    private Long id;
 
-  private String message;
+    private String message;
 
-  private T data;
+    private T data;
 
-  public OperationResponse(String id, String message) {
-    this.id = id;
-    this.message = message;
-  }
+    public OperationResponse(Long id, String message) {
+        this.id = id;
+        this.message = message;
+    }
 }
