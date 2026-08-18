@@ -13,6 +13,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import io.github.codecraft87.eshop.basket.common.enums.ErrorEnums;
+import io.github.codecraft87.eshop.common.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

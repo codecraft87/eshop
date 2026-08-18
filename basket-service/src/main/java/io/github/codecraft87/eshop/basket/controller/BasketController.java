@@ -14,9 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.codecraft87.eshop.basket.common.constants.ResponseMessageConstant;
 import io.github.codecraft87.eshop.basket.dto.BasketRequest;
 import io.github.codecraft87.eshop.basket.dto.BasketResponse;
-import io.github.codecraft87.eshop.basket.dto.OperationResponse;
-import io.github.codecraft87.eshop.basket.security.UserPrincipal;
+
 import io.github.codecraft87.eshop.basket.service.BasketService;
+import io.github.codecraft87.eshop.common.OperationResponse;
+import io.github.codecraft87.eshop.securitycommon.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,7 +42,9 @@ public class BasketController {
 
   @GetMapping
   public ResponseEntity<OperationResponse<List<BasketResponse>>> getBasket(Authentication authentication) {
+    log.info("User principal class {} ", authentication.getPrincipal().getClass().getName());
     UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
     log.info("Getting basket details for user {}", userPrincipal.getUserId());
     List<BasketResponse> basketResponse = basketService.getBasketDetails(userPrincipal.getUserId());
     OperationResponse<List<BasketResponse>> response = new OperationResponse<>(

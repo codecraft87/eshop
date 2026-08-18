@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.codecraft87.eshop.common.OperationResponse;
 import io.github.codecraft87.eshop.order.common.constants.ResponsMessageConstants;
 import io.github.codecraft87.eshop.order.common.enums.PaymentMode;
-import io.github.codecraft87.eshop.order.dto.OperationResponse;
 import io.github.codecraft87.eshop.order.dto.OrderRequest;
 import io.github.codecraft87.eshop.order.dto.OrderResponse;
 import io.github.codecraft87.eshop.order.dto.ProcessOrderInput;
-import io.github.codecraft87.eshop.order.security.UserPrincipal;
 import io.github.codecraft87.eshop.order.service.OrderService;
+import io.github.codecraft87.eshop.securitycommon.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

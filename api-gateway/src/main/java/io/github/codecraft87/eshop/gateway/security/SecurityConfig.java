@@ -9,6 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import io.github.codecraft87.eshop.securitycommon.JwtFilter;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -16,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final JWTFilter jwtFilter;
+  private final JwtFilter jwtFilter;
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) {

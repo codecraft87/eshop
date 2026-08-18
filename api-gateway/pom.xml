@@ -81,6 +81,11 @@
       		<groupId>org.springframework.cloud</groupId>
       		<artifactId>spring-cloud-starter-loadbalancer</artifactId>
     	</dependency>
+			<dependency>
+			<groupId>io.github.codecraft87.eshop</groupId>
+			<artifactId>eshop-security-common</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

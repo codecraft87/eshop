@@ -9,6 +9,7 @@ import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import io.github.codecraft87.eshop.common.ErrorResponse;
 import io.github.codecraft87.eshop.payment.common.enums.ErrorEnums;
 import lombok.extern.slf4j.Slf4j;
 

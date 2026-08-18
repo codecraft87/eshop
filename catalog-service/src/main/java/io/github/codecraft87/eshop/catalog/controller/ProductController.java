@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.codecraft87.eshop.catalog.common.constants.ResponseMessageConstant;
-import io.github.codecraft87.eshop.catalog.dto.OperationResponse;
 import io.github.codecraft87.eshop.catalog.dto.ProductRequest;
 import io.github.codecraft87.eshop.catalog.dto.ProductResponse;
 import io.github.codecraft87.eshop.catalog.service.ProductService;
+import io.github.codecraft87.eshop.common.OperationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

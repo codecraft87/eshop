@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.codecraft87.eshop.common.OperationResponse;
 import io.github.codecraft87.eshop.security.dto.UserDTO;
-import io.github.codecraft87.eshop.securitycommon.UserPrincipal;
 import io.github.codecraft87.eshop.security.dto.UserRequest;
 import io.github.codecraft87.eshop.security.service.JwtTokenGenerator;
+import io.github.codecraft87.eshop.security.service.SecurityUserDetails;
 import io.github.codecraft87.eshop.security.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +47,7 @@ public class AuthController {
         new UsernamePasswordAuthenticationToken(userRequest.username(), userRequest.password()));
     authentication.getAuthorities();
     if (authentication.isAuthenticated()) {
-      UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+      SecurityUserDetails userPrincipal = (SecurityUserDetails) authentication.getPrincipal();
       List<String> roles = authentication.getAuthorities()
           .stream()
           .map(role -> role.getAuthority())

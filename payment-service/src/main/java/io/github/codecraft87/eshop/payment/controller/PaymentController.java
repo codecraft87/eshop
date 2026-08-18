@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.codecraft87.eshop.common.OperationResponse;
 import io.github.codecraft87.eshop.payment.common.constants.ResponseMessageConstant;
-import io.github.codecraft87.eshop.payment.dto.OperationResponse;
 import io.github.codecraft87.eshop.payment.dto.PaymentResponse;
 import io.github.codecraft87.eshop.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
