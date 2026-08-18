@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserDetailsService {
     if (user == null) {
       throw new UsernameNotFoundException(username + " user not found");
     }
-    UserPrinicipal userPrinicipal = new UserPrinicipal(user);
-    return userPrinicipal;
+    SecurityUserDetails securityUserDetails = new SecurityUserDetails(user);
+    return securityUserDetails;
   }
 }

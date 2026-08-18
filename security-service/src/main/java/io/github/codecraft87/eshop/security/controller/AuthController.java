@@ -47,7 +47,7 @@ public class AuthController {
         new UsernamePasswordAuthenticationToken(userRequest.username(), userRequest.password()));
     authentication.getAuthorities();
     if (authentication.isAuthenticated()) {
-      UserPrinicipal userPrincipal = (UserPrinicipal) authentication.getPrincipal();
+      UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
       List<String> roles = authentication.getAuthorities()
           .stream()
           .map(role -> role.getAuthority())
