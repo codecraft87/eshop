@@ -24,7 +24,7 @@ public class BasketOutboxService {
   @Transactional(readOnly = true)
   public List<BasketOutboxMessage> getPendingEvents() {
     return outboxRepository.findByStatusInOrderByCreatedAt(
-        List.of(BaketOutboxEventStatus.NEW, BaketOutboxEventStatus.FAILED));
+        List.of(BasketOutboxEventStatus.NEW, BasketOutboxEventStatus.FAILED));
   }
 
   @Transactional

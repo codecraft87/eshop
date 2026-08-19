@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.amqp.AmqpException;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import io.github.codecraft87.eshop.order.messaging.config.ExchangeConstants;
-import io.github.codecraft87.eshop.order.messaging.config.RoutingKeyConstants;
+import io.github.codecraft87.eshop.messagingcommon.config.ExchangeConstants;
+import io.github.codecraft87.eshop.messagingcommon.publishing.EventPublisher;
+import io.github.codecraft87.eshop.order.messaging.config.OrderRoutingKeyConstants;
 import io.github.codecraft87.eshop.order.messaging.event.OrderCreated;
 import io.github.codecraft87.eshop.order.messaging.event.PaymentRequested;
 import lombok.RequiredArgsConstructor;
@@ -24,16 +25,18 @@ public class OrderOutboxService {
 
   private final OrderOutboxRepository outboxRepository;
 
-  private final RabbitTemplate rabbitTemplate;
+  private final EventPublisher eventPublisher;
 
   private final ObjectMapper objectMapper;
 
+  @Transactional
   public Long saveOrderCreatedEvent(OrderCreated orderCreated) {
     log.info("Saving Order Out box event {} ", orderCreated);
     OrderOutboxMessage outboxEventEntity = buildOrderOutboxMessageEntity(orderCreated);
     return outboxRepository.save(outboxEventEntity).getId();
   }
 
+  @Transactional
   public Long savePaymentRequestEvent(PaymentRequested paymentRequested) {
     log.info("Saving payment requested event {} ", paymentRequested);
     OrderOutboxMessage outBoxMessageEntity = buildPaymentRequestOutboxMessage(paymentRequested);
@@ -84,44 +87,14 @@ public class OrderOutboxService {
     return outboxEvent;
   }
 
-  public void publishPendingEvents() {
-
-    List<OrderOutboxMessage> events = outboxRepository.findByStatusInOrderByCreatedAt(
+  public List<OrderOutboxMessage> getPendingEvents() {
+    return outboxRepository.findByStatusInOrderByCreatedAt(
         List.of(OrderEventStatus.NEW, OrderEventStatus.FAILED));
-    if (events.size() > 0)
-      log.info("Pending order events to publish {} ", events.size());
-
-    for (OrderOutboxMessage event : events) {
-      try {
-        switch (event.getEventType()) {
-          case OrderEventType.ORDER_CREATED:
-            publishOrderCreatedEvent(event.getPayload());
-            break;
-          case OrderEventType.PAYMENT_REQUESTED:
-            publishPaymentRequestedEvent(event.getPayload());
-            break;
-          default:
-            log.warn("unknown event type to handle");
-        }
-        event.markPublished();
-      } catch (AmqpException ex) {
-        log.error("Event published failed ", ex);
-        event.markFailed(ex.getMessage());
-      }
-      if (events.size() > 0) {
-        outboxRepository.saveAll(events);
-        log.info("events saved");
-      }
-    }
   }
 
-  private void publishOrderCreatedEvent(String payload) {
-    rabbitTemplate.convertAndSend(
-        ExchangeConstants.ESHOP_EXCHANGE, RoutingKeyConstants.ORDER_CREATED, payload);
+  @Transactional
+  public void save(List<OrderOutboxMessage> events) {
+    outboxRepository.saveAll(events);
   }
 
-  private void publishPaymentRequestedEvent(String payload) {
-    rabbitTemplate.convertAndSend(
-        ExchangeConstants.ESHOP_EXCHANGE, RoutingKeyConstants.ORDER_PAYMENT_REQUESTED, payload);
-  }
 }

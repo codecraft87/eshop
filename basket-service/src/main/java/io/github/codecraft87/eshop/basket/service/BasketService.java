@@ -22,7 +22,7 @@ import io.github.codecraft87.eshop.basket.messaging.event.BasketCheckedOutEvent;
 import io.github.codecraft87.eshop.basket.messaging.event.BasketItemEvent;
 import io.github.codecraft87.eshop.basket.messaging.outbox.BasketOutboxMessage;
 import io.github.codecraft87.eshop.basket.messaging.outbox.BasketOutboxService;
-import io.github.codecraft87.eshop.basket.messaging.outbox.BaketOutboxEventStatus;
+import io.github.codecraft87.eshop.basket.messaging.outbox.BasketOutboxEventStatus;
 import io.github.codecraft87.eshop.basket.messaging.outbox.BasketOutboxEventType;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
 import lombok.RequiredArgsConstructor;
@@ -109,7 +109,7 @@ public class BasketService {
     BasketOutboxMessage entity = new BasketOutboxMessage();
     entity.setEventId(UUID.randomUUID());
     entity.setEventType(BasketOutboxEventType.BASKET_CHECKED_OUT);
-    entity.setStatus(BaketOutboxEventStatus.NEW);
+    entity.setStatus(BasketOutboxEventStatus.NEW);
     entity.setRetryCount(0);
     entity.setCreatedAt(Instant.now());
     BasketCheckedOutEvent checkedOutEvent = getBasketCheckedOutEvent(basket, entity);

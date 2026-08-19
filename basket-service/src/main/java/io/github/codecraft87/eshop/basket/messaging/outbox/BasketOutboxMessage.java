@@ -36,7 +36,7 @@ public class BasketOutboxMessage {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "event_status")
-  private BaketOutboxEventStatus status;
+  private BasketOutboxEventStatus status;
 
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
@@ -52,12 +52,12 @@ public class BasketOutboxMessage {
 
   public void markPublished() {
     this.setPublishedAt(Instant.now());
-    this.setStatus(BaketOutboxEventStatus.PUBLISHED);
+    this.setStatus(BasketOutboxEventStatus.PUBLISHED);
   }
 
   public void markFailed(String errorMessage) {
     this.setRetryCount(this.getRetryCount() + 1);
-    this.setStatus(BaketOutboxEventStatus.FAILED);
+    this.setStatus(BasketOutboxEventStatus.FAILED);
     this.setLastError(errorMessage);
   }
 }

@@ -1,6 +1,6 @@
 package io.github.codecraft87.eshop.order.messaging.config;
 
-public class RoutingKeyConstants {
+public class OrderRoutingKeyConstants {
 
   public static final String BASKET_CHECKOUT = "basket.checkout";
 
