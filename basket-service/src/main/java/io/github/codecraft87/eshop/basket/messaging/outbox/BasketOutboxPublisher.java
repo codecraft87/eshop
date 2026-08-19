@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import io.github.codecraft87.eshop.basket.messaging.config.RoutingKeyConstants;
 import io.github.codecraft87.eshop.messagingcommon.config.ExchangeConstants;
-import io.github.codecraft87.eshop.messagingcommon.outbox.OutboxPublisher;
 import io.github.codecraft87.eshop.messagingcommon.publishing.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Component
 @Slf4j
-public class BaketOutboxPublisher implements OutboxPublisher {
+public class BasketOutboxPublisher {
 
     private final BasketOutboxService basketOutboxService;
 
