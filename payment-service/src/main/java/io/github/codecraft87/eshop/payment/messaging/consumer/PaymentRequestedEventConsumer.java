@@ -27,7 +27,7 @@ public class PaymentRequestedEventConsumer {
 
   @RabbitListener(queues = QueueConstants.PAYMENT_ORDER_PAYMENT_REQUESTED_QUEUE)
   public void handlePaymentRequested(String payload) {
-    log.info("Received Order payment requested ");
+    log.info("Received Order payment requested {} ", payload);
     PaymentRequested paymentRequested = objectMapper.readValue(payload, PaymentRequested.class);
 
     if (paymentRequested != null) {
