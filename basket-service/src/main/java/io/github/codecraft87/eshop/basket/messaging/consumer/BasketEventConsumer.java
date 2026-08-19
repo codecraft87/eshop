@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 import io.github.codecraft87.eshop.basket.messaging.config.QueueConstants;
 import io.github.codecraft87.eshop.basket.messaging.event.OrderCreatedEvent;
-import io.github.codecraft87.eshop.basket.messaging.idempotency.BasketProcessedEventService;
 import io.github.codecraft87.eshop.basket.service.BasketService;
+import io.github.codecraft87.eshop.messagingcommon.idempotency.EventIdempotency;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
@@ -22,7 +22,7 @@ public class BasketEventConsumer {
 
   private final ObjectMapper objectMapper;
 
-  private final BasketProcessedEventService processedEventService;
+  private final EventIdempotency basketEventIdempotency;
 
   @RabbitListener(queues = QueueConstants.BASKET_ORDER_CREATED_QUEUE)
   public void handleOrderCreatedEvent(String payload) {
@@ -32,12 +32,12 @@ public class BasketEventConsumer {
     log.info("The basket {}", createdEvent.basketId());
     if (createdEvent != null) {
       UUID eventId = UUID.fromString(createdEvent.eventId());
-      if (processedEventService.checkIfEventIsProcessed(eventId)) {
+      if (basketEventIdempotency.isEventProcessed(eventId)) {
         log.warn("Duplicate event {} ignored ", eventId);
         return;
       }
       basketService.updateBasketForOrder(createdEvent.basketId());
-      processedEventService.addProcessedEventEntry(eventId);
+      basketEventIdempotency.saveProcessedEvent(eventId);
     }
     log.info("Basket checkout process completed");
   }

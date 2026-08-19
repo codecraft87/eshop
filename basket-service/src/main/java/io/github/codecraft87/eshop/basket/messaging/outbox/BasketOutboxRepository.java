@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BasketOutboxRepository extends JpaRepository<BasketOutboxMessage, Long> {
-  List<BasketOutboxMessage> findByStatusInOrderByCreatedAt(List<OutboxEventStatus> statuses);
+  List<BasketOutboxMessage> findByStatusInOrderByCreatedAt(List<BaketOutboxEventStatus> statuses);
 }

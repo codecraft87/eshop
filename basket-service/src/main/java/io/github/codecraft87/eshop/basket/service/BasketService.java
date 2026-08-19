@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.ResourceAccessException;
 
 import io.github.codecraft87.eshop.basket.common.enums.BasketStatus;
 import io.github.codecraft87.eshop.basket.dto.BasketItemRequest;
@@ -18,16 +17,14 @@ import io.github.codecraft87.eshop.basket.dto.ProductSnapshot;
 import io.github.codecraft87.eshop.basket.entity.Basket;
 import io.github.codecraft87.eshop.basket.entity.BasketItem;
 import io.github.codecraft87.eshop.basket.exceptions.BasketNotFoundException;
-import io.github.codecraft87.eshop.basket.exceptions.CatalogServiceUnavailableException;
 import io.github.codecraft87.eshop.basket.mapper.BasketMapper;
 import io.github.codecraft87.eshop.basket.messaging.event.BasketCheckedOutEvent;
 import io.github.codecraft87.eshop.basket.messaging.event.BasketItemEvent;
 import io.github.codecraft87.eshop.basket.messaging.outbox.BasketOutboxMessage;
 import io.github.codecraft87.eshop.basket.messaging.outbox.BasketOutboxService;
-import io.github.codecraft87.eshop.basket.messaging.outbox.OutboxEventStatus;
-import io.github.codecraft87.eshop.basket.messaging.outbox.OutboxEventType;
+import io.github.codecraft87.eshop.basket.messaging.outbox.BaketOutboxEventStatus;
+import io.github.codecraft87.eshop.basket.messaging.outbox.BasketOutboxEventType;
 import io.github.codecraft87.eshop.basket.repository.BasketRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.JacksonException;
@@ -111,8 +108,8 @@ public class BasketService {
   private BasketOutboxMessage buildBasketCheckedOutOutboxEvent(Basket basket) {
     BasketOutboxMessage entity = new BasketOutboxMessage();
     entity.setEventId(UUID.randomUUID());
-    entity.setEventType(OutboxEventType.BASKET_CHECKED_OUT);
-    entity.setStatus(OutboxEventStatus.NEW);
+    entity.setEventType(BasketOutboxEventType.BASKET_CHECKED_OUT);
+    entity.setStatus(BaketOutboxEventStatus.NEW);
     entity.setRetryCount(0);
     entity.setCreatedAt(Instant.now());
     BasketCheckedOutEvent checkedOutEvent = getBasketCheckedOutEvent(basket, entity);
