@@ -125,6 +125,11 @@
 			<artifactId>eshop-common</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+		 	<groupId>io.github.codecraft87.eshop</groupId>
+    		<artifactId>eshop-messaging-common</artifactId>
+    		<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

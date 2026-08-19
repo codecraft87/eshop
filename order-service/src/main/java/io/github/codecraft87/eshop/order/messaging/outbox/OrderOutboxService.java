@@ -4,13 +4,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.amqp.AmqpException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.github.codecraft87.eshop.messagingcommon.config.ExchangeConstants;
-import io.github.codecraft87.eshop.messagingcommon.publishing.EventPublisher;
-import io.github.codecraft87.eshop.order.messaging.config.OrderRoutingKeyConstants;
 import io.github.codecraft87.eshop.order.messaging.event.OrderCreated;
 import io.github.codecraft87.eshop.order.messaging.event.PaymentRequested;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +20,6 @@ import tools.jackson.databind.ObjectMapper;
 public class OrderOutboxService {
 
   private final OrderOutboxRepository outboxRepository;
-
-  private final EventPublisher eventPublisher;
 
   private final ObjectMapper objectMapper;
 
@@ -96,5 +90,4 @@ public class OrderOutboxService {
   public void save(List<OrderOutboxMessage> events) {
     outboxRepository.saveAll(events);
   }
-
 }

@@ -7,8 +7,9 @@ import java.util.UUID;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import io.github.codecraft87.eshop.payment.messaging.config.ExchangeConstants;
+import io.github.codecraft87.eshop.messagingcommon.config.ExchangeConstants;
 import io.github.codecraft87.eshop.payment.messaging.config.RoutingKeyConstants;
 import io.github.codecraft87.eshop.payment.messaging.event.PaymentAckowledge;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +24,9 @@ public class PaymentOutboxService {
 
   private final PaymentOutboxRepository outboxRepository;
 
-  private final RabbitTemplate rabbitTemplate;
-
   private final ObjectMapper objectMapper;
 
+  @Transactional
   public Long savePaymentCompletedEvent(Long orderId) {
     log.info("Saving Payment Requested Out box event {} ", orderId);
     PaymentOutboxMessage outboxMessageEntity = buildPaymentCompletedMessageEntity(orderId);
@@ -53,6 +53,7 @@ public class PaymentOutboxService {
     return outboxMessage;
   }
 
+  @Transactional
   public Long savePaymentFailededEvent(Long orderId) {
     log.info("Saving Payment Requested Out box event {} ", orderId);
     PaymentOutboxMessage outboxMessageEntity = buildPaymentFailedMessage(orderId);
@@ -79,45 +80,14 @@ public class PaymentOutboxService {
     return outboxMessage;
   }
 
-  public void publishPendingEvents() {
-
-    List<PaymentOutboxMessage> events = outboxRepository.findByStatusInOrderByCreatedAt(
+  @Transactional(readOnly = true)
+  public List<PaymentOutboxMessage> getPendingEvents() {
+    return outboxRepository.findByStatusInOrderByCreatedAt(
         List.of(PaymentEventStatus.NEW, PaymentEventStatus.FAILED));
-
-    if (events.size() > 0)
-      log.info("Pending payment events to publish {} ", events.size());
-    for (PaymentOutboxMessage event : events) {
-      try {
-        switch (event.getEventType()) {
-          case PaymentEventType.PAYMENT_DONE:
-            publishPaymentDoneEvent(event.getPayload());
-            event.markPublished();
-            break;
-          case PaymentEventType.PAYMENT_FAILED:
-            publishPaymentFailedEvent(event.getPayload());
-            event.markPublished();
-            break;
-          default:
-            log.info("unknown event type to handle");
-        }
-      } catch (AmqpException ex) {
-        log.error("Event published failed ", ex);
-        event.markFailed(ex.getMessage());
-      }
-    }
-    if (events.size() > 0) {
-      outboxRepository.saveAll(events);
-      log.info("events saved");
-    }
   }
 
-  private void publishPaymentFailedEvent(String payload) {
-    rabbitTemplate.convertAndSend(
-        ExchangeConstants.ESHOP_EXCHANGE, RoutingKeyConstants.PAYMENT_FAILED, payload);
-  }
-
-  private void publishPaymentDoneEvent(String payload) {
-    rabbitTemplate.convertAndSend(
-        ExchangeConstants.ESHOP_EXCHANGE, RoutingKeyConstants.PAYMENT_COMPLETED, payload);
+  @Transactional
+  public void save(List<PaymentOutboxMessage> events) {
+    outboxRepository.saveAll(events);
   }
 }

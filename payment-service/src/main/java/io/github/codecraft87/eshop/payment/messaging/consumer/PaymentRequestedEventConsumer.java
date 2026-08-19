@@ -5,10 +5,10 @@ import java.util.UUID;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
+import io.github.codecraft87.eshop.messagingcommon.idempotency.EventIdempotency;
 import io.github.codecraft87.eshop.payment.dto.PaymentRequest;
 import io.github.codecraft87.eshop.payment.messaging.config.QueueConstants;
 import io.github.codecraft87.eshop.payment.messaging.event.PaymentRequested;
-import io.github.codecraft87.eshop.payment.messaging.idempotency.PaymentProcessedEventService;
 import io.github.codecraft87.eshop.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class PaymentRequestedEventConsumer {
 
   private final ObjectMapper objectMapper;
 
-  private final PaymentProcessedEventService paymentProcessedEventService;
+  private final EventIdempotency paymentEventIdempotency;
 
   @RabbitListener(queues = QueueConstants.PAYMENT_ORDER_PAYMENT_REQUESTED_QUEUE)
   public void handlePaymentRequested(String payload) {
@@ -32,7 +32,7 @@ public class PaymentRequestedEventConsumer {
 
     if (paymentRequested != null) {
       UUID eventId = UUID.fromString(paymentRequested.eventId());
-      if (paymentProcessedEventService.checkIfEventIsProcessed(eventId)) {
+      if (paymentEventIdempotency.isEventProcessed(eventId)) {
         log.warn("Duplicate event {} ignored ", eventId);
         return;
       }
@@ -40,7 +40,7 @@ public class PaymentRequestedEventConsumer {
       request.setOrderId(paymentRequested.orderId());
       request.setPaymentMode(paymentRequested.paymentMode());
       paymentService.processPayment(request);
-      paymentProcessedEventService.addProcessedEventEntry(eventId);
+      paymentEventIdempotency.saveProcessedEvent(eventId);
     }
   }
 }
