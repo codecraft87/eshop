@@ -17,16 +17,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import io.github.codecraft87.eshop.security.service.UserServiceImpl;
 import io.github.codecraft87.eshop.securitycommon.JwtFilter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
   private final JwtFilter jwtFilter;
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) {
+    log.info("Security checking.");
     http.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/api/**").permitAll()

@@ -14,6 +14,7 @@ import org.springframework.web.client.ResourceAccessException;
 
 import io.github.codecraft87.eshop.basket.common.enums.ErrorEnums;
 import io.github.codecraft87.eshop.common.ErrorResponse;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -40,6 +41,19 @@ public class GlobalExceptionHandler {
                                 .body(
                                                 new ErrorResponse(
                                                                 ErrorEnums.CATALOG_SERVICE_UNAVAILABLE.getErrorCode(),
+                                                                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                                                                ErrorEnums.CATALOG_SERVICE_UNAVAILABLE
+                                                                                .getErrorMessage(),
+                                                                Instant.now()));
+        }
+
+        @ExceptionHandler(CallNotPermittedException.class)
+        public ResponseEntity<ErrorResponse> handleCallNotPermittedException(CallNotPermittedException ex) {
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                                .body(
+                                                new ErrorResponse(
+                                                                ErrorEnums.CATALOG_SERVICE_UNAVAILABLE
+                                                                                .getErrorCode(),
                                                                 HttpStatus.SERVICE_UNAVAILABLE.value(),
                                                                 ErrorEnums.CATALOG_SERVICE_UNAVAILABLE
                                                                                 .getErrorMessage(),

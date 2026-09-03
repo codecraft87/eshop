@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 import io.github.codecraft87.eshop.basket.catalog.CatalogClient;
 import io.github.codecraft87.eshop.basket.catalog.ProductResponse;
 import io.github.codecraft87.eshop.basket.dto.ProductSnapshot;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@CircuitBreaker(name = "catalogService")
 @Slf4j
 @RequiredArgsConstructor
 @Service
