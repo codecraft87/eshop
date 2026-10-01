@@ -1,4 +1,4 @@
-package io.github.codecraft87.eshop.order;
+package io.github.codecraft87.eshop.payment;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-public class EshopOrderServiceApplication {
+public class PaymentServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(EshopOrderServiceApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(PaymentServiceApplication.class, args);
+  }
 }

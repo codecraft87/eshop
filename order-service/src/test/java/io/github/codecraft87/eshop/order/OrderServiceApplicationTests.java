@@ -1,10 +1,10 @@
-package io.github.codecraft87.basket;
+package io.github.codecraft87.eshop.order;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BasketServiceApplicationTests {
+class OrderServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
