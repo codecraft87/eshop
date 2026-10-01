@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -223,8 +224,9 @@ public class BasketService {
   }
 
   private ProductSnapshot findProductById(Long productId) {
-    ProductSnapshot product = catalogService.getProductById(productId);
-    return product;
+    CompletionStage<ProductSnapshot> product = catalogService.getProductById(productId);
+
+    return product.toCompletableFuture().join();
   }
 
   private void saveBasket(Basket basket) {

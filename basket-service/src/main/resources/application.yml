@@ -9,8 +9,38 @@ spring:
         serviceclient:
             catalog-service:
                 connect-timeout: 3s
-                read-timeout: 10s
+                read-timeout: 15s
 
+    cloud:
+        circuitbreaker:
+            http-services:
+                enabled: false
+resilience4j:
+    retry:
+        instances:
+            catalogService:
+                maxAttempts: 3
+                waitDuration: 1s
+                retryExceptions:
+                    - org.springframework.web.client.HttpServerErrorException
+    circuitbreaker:
+        configs:
+            default:
+                registerHealthIndicator: true
+                slidingWindowSize: 10
+                minimumNumberOfCalls: 3
+                permittedNumberOfCallsInHalfOpenState: 3
+                waitDurationInOpenState: 10s
+                failureRateThreshold: 50
+        instances:
+            catalogService:
+                baseConfig: default
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health,metrics
 server:
     port: 8084
 
@@ -18,11 +48,6 @@ eureka:
     client:
         service-url:
             defaultZone: http://localhost:8761/eureka
-
 logging:
     level:
-        "[org.springframework.web.client]": DEBUG
-        "[org.springframework.web.service]": DEBUG
-        "[org.springframework.cloud.loadbalancer]": DEBUG
-        "[com.netflix.discovery]": DEBUG
-        "[org.springframework.cloud.netflix.eureka]": DEBUG
+        "[io.github.resilience4j.circuitbreaker]": DEBUG
